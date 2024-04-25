@@ -1,0 +1,31 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "build",
+            "command": "D:/PROGRAMMING/compiler/msys/ucrt64/bin/gcc.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "-I${workspaceFolder}/headers",
+                "${workspaceFolder}/src/main.c",
+                "${workspaceFolder}/src/read_file.c",
+                "${workspaceFolder}/src/start.c",
+                "-o",
+                "${workspaceFolder}/cutable.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "main task"
+        }
+    ],
+    "version": "2.0.0"
+}
