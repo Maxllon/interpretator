@@ -1,9 +1,5 @@
+#include<includes.h>
 #include<read_file.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<assert.h>
-
-#define uint unsigned
 
 uint fsize(FILE* fl)
 {
@@ -13,9 +9,20 @@ uint fsize(FILE* fl)
     fseek(fl,prev,SEEK_SET); //go back to where we were
     return sz;
 }
+char* concat(const char *s1, const char *s2)
+{
+    char *result = malloc(strlen(s1) + strlen(s2) + 1);
+    strcpy(result, s1);
+    strcat(result, s2);
+    return result;
+}
 
 char* read_file(char* filename)
 {
+    #ifdef TEST
+    filename = concat("D:/PROGRAMMING/projects/interpretator/",filename);
+    #endif
+
     FILE* file = fopen(filename, "r");
     if(file==NULL)
     {
@@ -27,5 +34,9 @@ char* read_file(char* filename)
     {
         *(text+i) = c;
     }
+
+    #ifdef TEST
+    free(filename);
+    #endif
     return text;
 }

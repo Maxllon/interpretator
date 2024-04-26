@@ -1,5 +1,4 @@
-#include<start.h>
-#include<stdio.h>
+#include<includes.h>
 #include<start.h>
 
 int start(const char* file,uint is_out_file,  uint is_out_tklist, uint is_out_tree)
