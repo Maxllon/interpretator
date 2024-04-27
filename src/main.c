@@ -2,6 +2,7 @@
 #include<includes.h>
 #include<read_file.h>
 #include<start.h>
+#include"lexer.c"
 
 int main(int argc, char* argv[])
 {
@@ -29,6 +30,7 @@ int main(int argc, char* argv[])
         scanf("%d",&is_out_tree);
 
         file = read_file(filename);
+        lexing(file);
 
         if(!start(file, is_out_file, is_out_tklist,is_out_tree))
         {
