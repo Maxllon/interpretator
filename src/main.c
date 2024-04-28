@@ -30,12 +30,8 @@ int main(int argc, char* argv[])
         scanf("%d",&is_out_tree);
 
         file = read_file(filename);
-        lexing(file);
 
-        if(!start(file, is_out_file, is_out_tklist,is_out_tree))
-        {
-            printf("Something is went wrong...\n");
-        }
+        start(file, is_out_file, is_out_tklist,is_out_tree);
 
         free(file);
 

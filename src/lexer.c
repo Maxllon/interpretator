@@ -1,4 +1,4 @@
-#include<includes.h>
+#include<lexer.h>
 
 typedef struct associative
 {
@@ -17,9 +17,9 @@ static associative_t* associative_stream;
 static associative_t* associative_stream_end;
 
 
-void create_associative(char* file)
+static void create_associative(char* file)
 {
-    associative_stream = malloc(sizeof(associative_t) * strlen(file) + 1);
+    associative_stream = malloc(sizeof(associative_t) * strlen(file));
     associative_t* asst = associative_stream;
     char symb;
     while(*file != '\0')
@@ -29,11 +29,15 @@ void create_associative(char* file)
             if(strchr(associative_list[i].value, *file))
             {
                 symb = *(strchr(associative_list[i].value, *file));
+
                 (*asst).type = malloc(strlen(associative_list[i].type)+1);
                 (*asst).value = malloc(2);
-                (*asst).type = associative_list[i].type;
+
+                strcpy((*asst).type,associative_list[i].type);
+
                 *((*asst).value) = symb;
                 *((*asst).value + 1) = '\0';
+
                 asst++;
                 break;
             }
@@ -42,6 +46,17 @@ void create_associative(char* file)
         file++;
     }
     associative_stream_end = asst;
+}
+static void delete_associative()
+{
+    associative_t* asst = associative_stream;
+    for(int i = 0; i < associative_stream_end - associative_stream; i++)
+    {
+        free((*asst).type);
+        free((*asst).value);
+        asst++;
+    }
+    free(associative_stream);
 }
 
 void out_asst()
@@ -54,9 +69,11 @@ void out_asst()
     }
 }
 
-void lexing(char* file)
+void lexing(char* file, uint is_out_file, uint is_out_tklist)
 {
     create_associative(file);
-    out_asst();
+    if (is_out_file) out_asst();
+
+    delete_associative();
 }
 
