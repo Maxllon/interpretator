@@ -6,14 +6,8 @@
 #include<assert.h>
 #include<string.h>
 
-#include<error_handle.h>
-
+#define getName(var)  #var
 #define uint unsigned
 #define TEST
-
-enum error_types
-{
-    some =0
-};
 
 #endif

@@ -30,11 +30,14 @@ int main(int argc, char* argv[])
         scanf("%d",&is_out_tree);
 
         file = read_file(filename);
+        if(file != NULL)
+        {
+            if(start(file, is_out_file, is_out_tklist,is_out_tree)) printf("Something is went wrong...\n");
 
-        start(file, is_out_file, is_out_tklist,is_out_tree);
-
-        free(file);
-
+            free(file);
+        }
+        else printf("Something is went wrong...\n");
+        
         printf("end? (1|0): ");
         scanf("%d",&is_end);
     }

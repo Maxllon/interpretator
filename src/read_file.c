@@ -25,7 +25,8 @@ char* read_file(char* filename)
     FILE* file = fopen(filename, "r");
     if(file==NULL)
     {
-        printf("Cannot open the file: %s\n", filename);
+        printf("Error: Cannot open the file on this path: <%s>\n", filename);
+        return NULL;
     }
     char* text = malloc(sizeof(char)*fsize(file));
     char c;

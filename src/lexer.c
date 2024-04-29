@@ -17,7 +17,7 @@ static associative_t* associative_stream;
 static associative_t* associative_stream_end;
 
 
-static void create_associative(char* file)
+static char* create_associative(char* file)
 {
     associative_stream = malloc(sizeof(associative_t) * strlen(file));
     associative_t* asst = associative_stream;
@@ -46,6 +46,7 @@ static void create_associative(char* file)
         file++;
     }
     associative_stream_end = asst;
+    return NULL;
 }
 static void delete_associative()
 {
@@ -59,7 +60,7 @@ static void delete_associative()
     free(associative_stream);
 }
 
-void out_asst()
+static void out_asst()
 {
     associative_t* asst = associative_stream;
     for(int i = 0; i < associative_stream_end - associative_stream; i++)
@@ -69,11 +70,17 @@ void out_asst()
     }
 }
 
-void lexing(char* file, uint is_out_file, uint is_out_tklist)
+int lexing(char* file, uint is_out_file, uint is_out_tklist)
 {
-    create_associative(file);
+    char* message = create_associative(file);
+    if(message != NULL)
+    {
+        printf("%s", message);
+        return 1;
+    }
     if (is_out_file) out_asst();
 
     delete_associative();
+    return 0;
 }
 

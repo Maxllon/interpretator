@@ -3,6 +3,6 @@
 
 #include<includes.h>
 
-void start(char* file, uint is_out_file,  uint is_out_tklist, uint is_out_tree);
+int start(char* file, uint is_out_file,  uint is_out_tklist, uint is_out_tree);
 
 #endif
