@@ -11,6 +11,8 @@
                 "${workspaceFolder}/src/main.c",
                 "${workspaceFolder}/src/read_file.c",
                 "${workspaceFolder}/src/start.c",
+                "${workspaceFolder}/src/lexer.c",
+                "${workspaceFolder}/src/token_list.c",
                 "-o",
                 "${workspaceFolder}/cutable.exe"
             ],

@@ -3,30 +3,24 @@
 
 #include<includes.h>
 
-enum token_types
+typedef enum token_types
 {
-    KEYWORD,
+    KEYWORD = 0,
     STRING,
     INTEGER,
     DOUBLE
-};
-typedef union value
-{
-    long long int i;
-    long double f;
-    char* s;
-}value_t;
+}token_type_t;
 typedef struct node
 {
     node_t* next;
     node_t* prev;
 
-    char* tk_type;
+    token_type_t tk_type;
     
-    value_t value;
+    char* value;
 }node_t;
 
-node_t* new_node(char* tk_type, value_t value);
+node_t* new_node(token_type_t tk_type, char* value);
 void del_node(node_t* node);
 typedef struct tk_list
 {
