@@ -1,5 +1,5 @@
 #include<lexer.h>
-
+#include<token_list.h>
 typedef struct associative
 {
     char* type;
@@ -79,6 +79,13 @@ int lexing(char* file, uint is_out_file, uint is_out_tklist)
         return 1;
     }
     if (is_out_file) out_asst();
+
+    node_t* father = new_node(INTEGER, "123");
+    father->next = new_node(STRING, "aboba");
+
+    printf("%s %s\n", father->value, father->next->value);
+    del_node(father);
+    
 
     delete_associative();
     return 0;

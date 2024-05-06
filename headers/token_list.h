@@ -12,23 +12,15 @@ typedef enum token_types
 }token_type_t;
 typedef struct node
 {
-    node_t* next;
-    node_t* prev;
+    struct node* next;
+    struct node* prev;
 
     token_type_t tk_type;
     
     char* value;
 }node_t;
 
-node_t* new_node(token_type_t tk_type, char* value);
+node_t *new_node(token_type_t tk_type, char* value);
 void del_node(node_t* node);
-typedef struct tk_list
-{
-    node_t* father;
-
-    node_t* get();
-    node_t* previous();
-    node_t* next();
-}tk_list_t;
 
 #endif
