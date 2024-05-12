@@ -3,7 +3,13 @@
 
 int start(char* file,uint is_out_file,  uint is_out_tklist, uint is_out_tree)
 {
-    if (lexing(file, is_out_file, is_out_tklist)) return 1;
+    node_t* tk_list = lexing(file, is_out_file, is_out_tklist);
+    if(tk_list == NULL)
+    {
+        printf("Error: token list is NULL\n");
+        return 1;
+    }
 
+    del_node(tk_list);
     return 0;
 }

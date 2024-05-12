@@ -2,7 +2,8 @@
 #define LEXER_H
 
 #include<includes.h>
+#include<token_list.h>
 
-int lexing(char* file, uint is_out_file, uint is_out_tklist);
+node_t* lexing(char* file, uint is_out_file, uint is_out_tklist);
 
 #endif

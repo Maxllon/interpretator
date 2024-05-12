@@ -8,7 +8,9 @@ typedef enum token_types
     KEYWORD = 0,
     STRING,
     INTEGER,
-    DOUBLE
+    DOUBLE,
+    START,
+    END
 }token_type_t;
 typedef struct node
 {

@@ -70,24 +70,19 @@ static void out_asst()
     }
 }
 
-int lexing(char* file, uint is_out_file, uint is_out_tklist)
+node_t* lexing(char* file, uint is_out_file, uint is_out_tklist)
 {
     char* message = create_associative(file);
     if(message != NULL)
     {
         printf("%s", message);
-        return 1;
+        return NULL;
     }
     if (is_out_file) out_asst();
 
-    node_t* father = new_node(INTEGER, "123");
-    father->next = new_node(STRING, "aboba");
-
-    printf("%s %s\n", father->value, father->next->value);
-    del_node(father);
-    
+    node_t* father = new_node(START, "");
 
     delete_associative();
-    return 0;
+    return father;
 }
 
