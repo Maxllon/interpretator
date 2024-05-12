@@ -6,8 +6,4 @@
 #include<assert.h>
 #include<string.h>
 
-#define getName(var)  #var
-#define uint unsigned
-#define TEST
-
 #endif
