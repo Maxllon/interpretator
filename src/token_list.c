@@ -9,28 +9,23 @@ node_t *new_node(token_type_t tk_type, char* value)
     node->value = strcpy(node->value, value);
     return node;
 }
-void del_node(node_t* node)
+
+void push_back(node_t* destination, node_t* node)
 {
-    if(node == NULL)
+    if(destination == NULL)
     {
-        printf("Error: cannot delete node, tklist is epmty\n");
+        printf("Error: cant push back. The destination is NULL\n");
         return;
     }
+    while(destination->next != NULL)
+    {
+        destination = destination->next;
+    }
+    destination->next = node;
+}
+void del_node(node_t* node)
+{
     if(node->next != NULL) del_node(node->next);
     free(node->value);
     free(node);
-}
-
-void push_back(node_t* node, node_t* val)
-{
-    if(node == NULL)
-    {
-        printf("Error: cannot push_back, tklist is epmty\n");
-        return;
-    }
-    while(node->next!=NULL)
-    {
-        node = node->next;
-    }
-    node->next = val;
 }

@@ -21,7 +21,7 @@ typedef struct node
 }node_t;
 
 node_t *new_node(token_type_t tk_type, char* value);
+void push_back(node_t* destination, node_t* node);
 void del_node(node_t* node);
-void push_back(node_t* node, node_t* val);
 
 #endif
