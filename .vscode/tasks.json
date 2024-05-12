@@ -9,6 +9,10 @@
                 "-g",
                 "-I${workspaceFolder}/headers",
                 "${workspaceFolder}/src/main.c",
+                "${workspaceFolder}/src/read_file.c",
+                "${workspaceFolder}/src/lexer.c",
+                "${workspaceFolder}/src/parcer.c",
+                "${workspaceFolder}/src/interpretator.c",
                 "-o",
                 "${workspaceFolder}/cutable.exe"
             ],
