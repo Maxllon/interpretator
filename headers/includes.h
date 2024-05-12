@@ -5,6 +5,10 @@
 #include<stdlib.h>
 #include<assert.h>
 #include<string.h>
-#include<cstdint>
+#include<stdint.h>
+#include<locale.h>
+
+#define TEST
+#define uint unsigned
 
 #endif

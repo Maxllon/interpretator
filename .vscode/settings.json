@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "read_file.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "stdlib.h": "c"
     }
 }
