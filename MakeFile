@@ -1,0 +1,26 @@
+VPATH = src
+CC = gcc
+CFLAGS = -Wall
+INCLUDE = include
+EXECUTABLE = bmpl
+HEADERS = $(wildcard *.h)
+OBJECTS = main.o lexer.o parcer.o interpretator.o
+
+all: $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(CFLAGS) $^ -o $@ -I $(INCLUDE)
+
+main.o: main.c $(HEADERS)
+	$(CC) $(CFLAGS) -c $^
+
+interpretator.o: interpretator.c interpretator.h
+	$(CC) $(CFLAGS) -c $^
+
+lexer.o: lexer.c lexer.h obj
+	$(CC) $(CFLAGS) -c $^
+
+parcer.o: parcer.c parcer.h obj
+	$(CC) $(CFLAGS) -c $^
+
+

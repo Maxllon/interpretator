@@ -1,10 +1,9 @@
-//Headers
-#include<includes.h>
-#include<read_file.h>
+#include<stdio.h>
+#include<stdlib.h>
 
 int main(int argc, char* argv[])
 {
-    wchar_t* file = read_file("example.txt");
-    wprintf(L"%lc",file[0]);
+    printf("Hello world!\n");
+    system("pause");
     return 0;
 }
