@@ -1,18 +1,27 @@
 CC = gcc
 CFLAGS = -Wall
-INCLUDE = include
-EXECUTABLE = bmpl
 SRC = src
+INCLUDE = headers
 OBJ = obj
+EXECUTABLE = bmpl.exe
+
 SRCS = $(wildcard $(SRC)/*.c)
-OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
+OBJS = $(patsubst $(SRC)/%.c, $(OBJ)/%.o,$(SRCS))
+
+.PHONY: all clean
+
 all: $(EXECUTABLE)
 
-$(EXECUTABLE): $(OBJS) $(OBJ)
-	$(CC) $(CFLAGS) $(OBJS) -o $@ -I $(INCLUDE)
+$(EXECUTABLE): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $@
 
-$(OBJ)/%.o: $(SRC)/%.c $(OBJ)
-	$(CC) $(CFLAGS) -c $< -o $@
+$(OBJ)/%.o: $(SRC)/%.c | $(OBJ)
+	$(CC) $(CFLAGS) -I$(INCLUDE) -c $< -o $@
 
 $(OBJ):
-	mkdir -p $@
+	mkdir $@
+
+clean:
+	del /Q $(OBJ)\* 2>nul
+	del $(EXECUTABLE) 2>nul
+	rmdir $(OBJ) 2>nul
