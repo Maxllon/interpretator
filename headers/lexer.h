@@ -35,10 +35,9 @@ typedef struct tk_node_t
     struct tk_node_t* previous;
 }tk_node;
 
-tk_node push_node(tk_node* main, tk_node* node);
+void push_node(tk_node* main, tk_node* node);
 tk_node* new_node(TOKEN_KIND kind, wchar* value, VEC_2 pos);
-
-void delete_tk_list(tk_node* start_tk_list);
+void delete_tk_list(tk_node* main);
 
 tk_node* lexing(wchar* file);
 
