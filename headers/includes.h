@@ -1,6 +1,7 @@
 #ifndef INCLUDES_H
 #define INCLUDES_H
 
+#include<stdlib.h>
 #include<stdint.h>
 #include<wchar.h>
 #include<stdio.h>
