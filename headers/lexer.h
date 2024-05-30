@@ -12,11 +12,15 @@ typedef struct
 typedef enum
 {
     END = 0,
+    START,
     KEYWORD,
     VARIABLE,
     STRING,
     BINARY,
-    SPECIAL
+    SPECIAL,
+    DIGIT,
+    PLAIN,
+    SYMBOL
 }TOKEN_KIND;
 
 typedef struct tk_node_t

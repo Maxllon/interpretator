@@ -6,15 +6,14 @@ tk_node* new_node(TOKEN_KIND kind, wchar* value, VEC_2 pos)
     node->next = NULL;
     node->previous = NULL;
     node->pos = pos;
-    node->value = malloc(sizeof(wchar) * wcslen(value) + 2);
-    wcscpy(node->value, value);
+    node->value = value;
     return node;
 }
 
 void delete_tk_list(tk_node* main)
 {
+    if(main == NULL) return;
     if(main->next != NULL) delete_tk_list(main->next);
-    else free(main->next);
     free(main->value);
     free(main);
 }
@@ -38,13 +37,59 @@ tk_node* go_start(tk_node* main)
 
 const wchar* KEYWORDS = L"если пока иначе вернуть не брать из функ нч кн";
 const wchar* STDFUNC = L"печать ввод промежуток";
-const wchar* BIN_OP = L"+ - = == * / // ^ != > < <= >= ост и или";
+const wchar* BIN_OP = L"+-=*/^!><";
 const wchar* NUMBER = L"0123456789.";
 const wchar* SPEC = L";,()\"";
 
 tk_node* lexing(wchar* file)
 {
-    tk_node* main = NULL;
+    //--------------------------lexing symbols-------------------------
+    VEC_2 pos = {0,0};
+    tk_node* symbols = new_node(START, NULL,pos);
+    wchar* str;
+    wchar sym;
+    for(u8 i = 0; i < wcslen(file); ++i)
+    {
+        sym = *(file+i);
+        if(wcschr(SPEC, sym) != NULL)
+        {
+            str = malloc(sizeof(wchar) * 2);
+            *str = sym;
+            *(str+1) = L'\0';
+            push_node(symbols, new_node(SPECIAL, str, pos));
+        }
+        else if(sym == L'\n')
+        {
+            pos.y++;
+            pos.x = 0;
+        }
+        else if(wcschr(BIN_OP, sym) != NULL)
+        {
+            str = malloc(sizeof(wchar) * 2);
+            *str = sym;
+            *(str+1) = L'\0';
+            push_node(symbols, new_node(BINARY, str, pos));
+        }
+        else if(wcschr(NUMBER, sym) != NULL)
+        {
+            str = malloc(sizeof(wchar) * 2);
+            *str = sym;
+            *(str+1) = L'\0';
+            push_node(symbols, new_node(DIGIT, str, pos));
+        }
+        else
+        {
+            str = malloc(sizeof(wchar) * 2);
+            *str = sym;
+            *(str+1) = L'\0';
+            push_node(symbols, new_node(SYMBOL, str, pos));          
+        }
+        if(sym != L'\n') pos.x++;
+    }
+    //----------------------end lexing symbols-------------------------
 
+    wprintf(L"%d %ls\n", symbols->next->kind, symbols->next->value);
+    tk_node* main = NULL;
+    delete_tk_list(symbols);
     return main;
 }
