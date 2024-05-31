@@ -86,10 +86,18 @@ tk_node* lexing(wchar* file)
         }
         if(sym != L'\n') pos.x++;
     }
+    push_node(symbols, new_node(END, NULL, pos));
     //----------------------end lexing symbols-------------------------
 
-    wprintf(L"%d %ls\n", symbols->next->kind, symbols->next->value);
-    tk_node* main = NULL;
+    tk_node* main = new_node(START, NULL,pos);
+    while(symbols->kind != END)
+    {
+        //lex
+
+        
+        symbols = symbols->next;
+    }
+    symbols = go_start(symbols);
     delete_tk_list(symbols);
     return main;
 }
