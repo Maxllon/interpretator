@@ -115,10 +115,10 @@ tk_node* lexing(wchar* file)
     {
         str = malloc(2);
         *str = L'\0';
+        pos = symbols->pos;
         //lex number
         if(symbols->kind == DIGIT)
         {
-            pos = symbols->pos;
             while(symbols->kind == DIGIT)
             {
                 bm_wcscat(str, symbols->value);
@@ -130,6 +130,26 @@ tk_node* lexing(wchar* file)
             if(count(str, L'.') > 1) error("this number has more than 1 dot", pos);
             
             push_node(main, new_node(NUMBER, str, pos));
+        }
+
+        //lex special symbols
+        else if(symbols->kind == SPECIAL)
+        {
+            if(*(symbols->value) == L'\"')
+            {
+                if(symbols->next->kind == END) error("there is no end for the string", pos);
+                while(*((symbols = symbols->next)->value) != L'\"')
+                {
+                    if(symbols->next->kind == END) error("there is no end of the string", pos);
+                    bm_wcscat(str, symbols->value);
+                }
+                push_node(main, new_node(STRING, str, pos));
+            }
+            else
+            {
+                bm_wcscat(str, symbols->value);
+                push_node(main, new_node(SPECIAL, str, pos));
+            }
         }
 
         
