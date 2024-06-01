@@ -34,18 +34,43 @@ tk_node* go_start(tk_node* main)
     while(main->previous != NULL) main = main->previous;
     return main;
 }
+const char* name_tokens[] = {"END", "START", "KEYWORD", "VARIABLE", "STRING", "BINARY", "SPECIAL", "DIGIT", "PLAIN", "SYMBOL", "NUMBER"};
+void out_tk_list(tk_node *main)
+{
+    while(1)
+    {
+        printf("kind: %s ", name_tokens[main->kind]);
+        wprintf(L"value: %ls ", main->value);
+        printf("pos: %d %d\n", main->pos.x, main->pos.y);
+        if(main->kind == END) break;
+        main = main->next;
+    }
+    printf("\n\n\n");
+}
+int count(wchar* str, wchar symb)
+{
+    int c = 0;
+    while((str = wcschr(str, symb)) != NULL)
+    {
+        c++;
+        str++;
+    }
+    return c;
+}
 
 const wchar* KEYWORDS = L"если пока иначе вернуть не брать из функ нч кн";
 const wchar* STDFUNC = L"печать ввод промежуток";
 const wchar* BIN_OP = L"+-=*/^!><";
-const wchar* NUMBER = L"0123456789.";
+const wchar* DIGITS = L"0123456789.";
 const wchar* SPEC = L";,()\"";
 
 tk_node* lexing(wchar* file)
 {
     //--------------------------lexing symbols-------------------------
-    VEC_2 pos = {0,0};
+    VEC_2 pos = {-1,-1};
     tk_node* symbols = new_node(START, NULL,pos);
+    pos.x = 0;
+    pos.y = 0;
     wchar* str;
     wchar sym;
     for(u8 i = 0; i < wcslen(file); ++i)
@@ -53,9 +78,7 @@ tk_node* lexing(wchar* file)
         sym = *(file+i);
         if(wcschr(SPEC, sym) != NULL)
         {
-            str = malloc(sizeof(wchar) * 2);
-            *str = sym;
-            *(str+1) = L'\0';
+            emp_str(str)
             push_node(symbols, new_node(SPECIAL, str, pos));
         }
         else if(sym == L'\n')
@@ -65,39 +88,58 @@ tk_node* lexing(wchar* file)
         }
         else if(wcschr(BIN_OP, sym) != NULL)
         {
-            str = malloc(sizeof(wchar) * 2);
-            *str = sym;
-            *(str+1) = L'\0';
+            emp_str(str)
             push_node(symbols, new_node(BINARY, str, pos));
         }
-        else if(wcschr(NUMBER, sym) != NULL)
+        else if(wcschr(DIGITS, sym) != NULL)
         {
-            str = malloc(sizeof(wchar) * 2);
-            *str = sym;
-            *(str+1) = L'\0';
+            emp_str(str)
             push_node(symbols, new_node(DIGIT, str, pos));
         }
         else
         {
-            str = malloc(sizeof(wchar) * 2);
-            *str = sym;
-            *(str+1) = L'\0';
+            emp_str(str)
             push_node(symbols, new_node(SYMBOL, str, pos));          
         }
         if(sym != L'\n') pos.x++;
     }
+    pos.x = -1;
+    pos.y = -1;
     push_node(symbols, new_node(END, NULL, pos));
+    if(out_symbols) out_tk_list(symbols);
     //----------------------end lexing symbols-------------------------
-
+    pos.x = -1;
+    pos.y = -1;
     tk_node* main = new_node(START, NULL,pos);
     while(symbols->kind != END)
     {
-        //lex
+        str = malloc(2);
+        *str = L'\0';
+        //lex number
+        if(symbols->kind == DIGIT)
+        {
+            pos = symbols->pos;
+            while(symbols->kind == DIGIT)
+            {
+                bm_wcscat(str, symbols->value);
+                symbols = symbols->next;
+            }
+            symbols = symbols->previous;
+
+            if(*str == L'0' && *(str+1) != L'.' && *(str+1) != L'\0') error("this number cant start with zero",pos);
+            if(count(str, L'.') > 1) error("this number has more than 1 dot", pos);
+            
+            push_node(main, new_node(NUMBER, str, pos));
+        }
 
         
         symbols = symbols->next;
     }
+    pos.x = -1;
+    pos.y = -1;
+    push_node(main, new_node(END, NULL, pos));
     symbols = go_start(symbols);
     delete_tk_list(symbols);
+    if(out_tklist) out_tk_list(main);
     return main;
 }
