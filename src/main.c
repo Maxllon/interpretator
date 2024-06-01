@@ -15,7 +15,6 @@ int main(int argc, char *argv[])
 
     tk_node* main = lexing(file);
 
-system("pause");
     delete_tk_list(main);
     free(file);
     system("pause");

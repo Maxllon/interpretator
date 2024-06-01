@@ -14,4 +14,6 @@
 #define expan ".txt"
 #define fbuf 10000
 
+#define bm_wcscat(str1, str2) str1 = realloc(str1, 2*wcslen(str2)); wcscat(str1, str2)
+
 #endif
