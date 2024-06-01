@@ -67,7 +67,7 @@ wchar *read_file(char *filename)
         tx++;
     }
     *tx = '\0';
-    free(content);
+    bm_free(content);
     return text;
 }
 

@@ -14,8 +14,8 @@ void delete_tk_list(tk_node* main)
 {
     if(main == NULL) return;
     if(main->next != NULL) delete_tk_list(main->next);
-    free(main->value);
-    free(main);
+    bm_free(main->value);
+    bm_free(main);
 }
 
 void push_node(tk_node* main, tk_node* node)
@@ -126,8 +126,22 @@ tk_node* lexing(wchar* file)
             }
             symbols = symbols->previous;
 
-            if(*str == L'0' && *(str+1) != L'.' && *(str+1) != L'\0') error("this number cant start with zero",pos);
-            if(count(str, L'.') > 1) error("this number has more than 1 dot", pos);
+            if(*str == L'0' && *(str+1) != L'.' && *(str+1) != L'\0')
+            {
+                delete_tk_list(main);
+                delete_tk_list(symbols);
+                bm_free(file);
+                bm_free(str);
+                error("this number cant start with zero",pos);
+            }
+            if(count(str, L'.') > 1)
+            {
+                delete_tk_list(main);
+                delete_tk_list(symbols);
+                bm_free(file);
+                bm_free(str);
+                error("this number has more than 1 dot", pos);
+            }
             
             push_node(main, new_node(NUMBER, str, pos));
         }
@@ -137,10 +151,22 @@ tk_node* lexing(wchar* file)
         {
             if(*(symbols->value) == L'\"')
             {
-                if(symbols->next->kind == END) error("there is no end for the string", pos);
+                if(symbols->next->kind == END)
+                {
+                    delete_tk_list(main);
+                    delete_tk_list(symbols);
+                    bm_free(str);
+                    error("there is no end for the string", pos);
+                }
                 while(*((symbols = symbols->next)->value) != L'\"')
                 {
-                    if(symbols->next->kind == END) error("there is no end of the string", pos);
+                    if(symbols->next->kind == END)
+                    {
+                        delete_tk_list(main);
+                        delete_tk_list(symbols);
+                        bm_free(str);
+                        error("there is no end of the string", pos);
+                    }
                     bm_wcscat(str, symbols->value);
                 }
                 push_node(main, new_node(STRING, str, pos));
