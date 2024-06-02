@@ -12,7 +12,6 @@ int main(int argc, char *argv[])
     if(out_file) wprintf(L"%ls\n\n\n\n",file);
 
     tk_node* main = lexing(file);
-
     delete_tk_list(main);
     bm_free(file);
     system("pause");

@@ -34,7 +34,7 @@ tk_node* go_start(tk_node* main)
     while(main->previous != NULL) main = main->previous;
     return main;
 }
-const char* name_tokens[] = {"END", "START", "KEYWORD", "VARIABLE", "STRING", "BINARY", "SPECIAL", "DIGIT", "PLAIN", "SYMBOL", "NUMBER"};
+const char* name_tokens[] = {"END", "START", "KEYWORD", "VARIABLE", "STRING", "BINARY", "SPECIAL", "DIGIT", "PLAIN", "SYMBOL", "NUMBER", "STD"};
 void out_tk_list(tk_node *main)
 {
     while(1)
@@ -58,8 +58,8 @@ int count(wchar* str, wchar symb)
     return c;
 }
 
-const wchar* KEYWORDS = L"если пока иначе вернуть не брать из функ нч кн";
-const wchar* STDFUNC = L"печать ввод промежуток";
+const wchar* KEYWORDS[] = {L"если", L"пока", L"иначе", L"вернуть", L"не", L"брать", L"из", L"функ", L"нч", L"кн"};
+const wchar* STDFUNC[] = {L"печать", L"ввод", L"промежуток"};
 const wchar* BIN_OP = L"+-=*/^!><";
 const wchar* DIGITS = L"0123456789.";
 const wchar* SPEC = L";,()\"";
@@ -73,7 +73,7 @@ tk_node* lexing(wchar* file)
     pos.y = 0;
     wchar* str;
     wchar sym;
-    for(u8 i = 0; i < wcslen(file); ++i)
+    for(size_t i = 0; i < wcslen(file); ++i)
     {
         sym = *(file+i);
         if(wcschr(SPEC, sym) != NULL)
@@ -98,6 +98,7 @@ tk_node* lexing(wchar* file)
         }
         else
         {
+            wprintf(L"%lc\n", sym);
             emp_str(str)
             push_node(symbols, new_node(SYMBOL, str, pos));          
         }
@@ -111,8 +112,10 @@ tk_node* lexing(wchar* file)
     pos.x = -1;
     pos.y = -1;
     tk_node* main = new_node(START, NULL,pos);
+    int temp;
     while(symbols->kind != END)
     {
+        temp = 0;
         str = malloc(2);
         *str = L'\0';
         pos = symbols->pos;
@@ -177,7 +180,54 @@ tk_node* lexing(wchar* file)
                 push_node(main, new_node(SPECIAL, str, pos));
             }
         }
+        //lex words
+        else if(symbols->kind == SYMBOL)
+        {
+            while(symbols->kind == SYMBOL && *(symbols->value) != L' ')
+            {
+                bm_wcscat(str, symbols->value);
+                symbols = symbols->next;
+            }
+            for(size_t i = 0; i < sizeof(KEYWORDS)/sizeof(wchar*); ++i)
+            {
+                if(wcscmp(str, KEYWORDS[i]) == 0)
+                {
+                    push_node(main, new_node(KEYWORD, str, pos));
+                    temp++;
+                }
+            }
+            if(!temp)
+            {
+            for(size_t i = 0; i < sizeof(STDFUNC)/sizeof(wchar*); ++i)
+            {
+                if(wcscmp(str, STDFUNC[i]) == 0)
+                {
+                    push_node(main, new_node(STD, str, pos));
+                    temp++;
+                }
+                
+            }
+            }
+            if(!temp && *(str) != L'\0') push_node(main, new_node(PLAIN, str, pos));
 
+            if(*(symbols->value) != L' ')symbols = symbols->previous;
+            if(symbols->kind == END)
+            {
+                symbols = symbols->previous;
+            }
+        }
+        //lex bin
+        else if(symbols->kind == BINARY)
+        {
+            while(symbols->kind == BINARY)
+            {
+                bm_wcscat(str, symbols->value);
+                symbols = symbols->next;
+            }
+            push_node(main, new_node(PLAIN, str, pos));
+
+            symbols = symbols->previous;
+        }
         
         symbols = symbols->next;
     }

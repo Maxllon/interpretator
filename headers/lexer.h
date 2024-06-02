@@ -21,7 +21,8 @@ typedef enum
     DIGIT,
     PLAIN,
     SYMBOL,
-    NUMBER
+    NUMBER,
+    STD
 } TOKEN_KIND;
 
 typedef struct tk_node_t
