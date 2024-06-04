@@ -98,7 +98,6 @@ tk_node* lexing(wchar* file)
         }
         else
         {
-            wprintf(L"%lc\n", sym);
             emp_str(str)
             push_node(symbols, new_node(SYMBOL, str, pos));          
         }
@@ -181,7 +180,7 @@ tk_node* lexing(wchar* file)
             }
         }
         //lex words
-        else if(symbols->kind == SYMBOL)
+        else if(symbols->kind == SYMBOL && *(symbols->value) != L' ')
         {
             while(symbols->kind == SYMBOL && *(symbols->value) != L' ')
             {
@@ -208,13 +207,9 @@ tk_node* lexing(wchar* file)
                 
             }
             }
-            if(!temp && *(str) != L'\0') push_node(main, new_node(PLAIN, str, pos));
+            if(!temp) push_node(main, new_node(PLAIN, str, pos));
 
-            if(*(symbols->value) != L' ')symbols = symbols->previous;
-            if(symbols->kind == END)
-            {
-                symbols = symbols->previous;
-            }
+            symbols = symbols->previous;
         }
         //lex bin
         else if(symbols->kind == BINARY)

@@ -39,7 +39,7 @@ wchar *read_file(char *filename)
     }
 
     long file_size = fsize(file);
-    wchar *text = (wchar *)malloc(2 * file_size + 1);
+    wchar *text = (wchar *)malloc(2 * file_size + 2);
 
     char *content = (char *)malloc(file_size + 1);
     content[file_size] = '\0';
@@ -48,6 +48,7 @@ wchar *read_file(char *filename)
     fclose(file);
 
     wchar *tx = text;
+    wchar s;
     for (int i = 0; i < file_size; i++)
     {
         if ((u8)content[i] == 208)
@@ -62,11 +63,12 @@ wchar *read_file(char *filename)
         }
         else
         {
-            *tx = content[i];
+            mbtowc(&s, &content[i], 1);
+            *tx = s;
         }
         tx++;
     }
-    *tx = '\0';
+    *tx = L'\0';
     bm_free(content);
     return text;
 }
