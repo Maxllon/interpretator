@@ -58,9 +58,11 @@ int count(wchar* str, wchar symb)
     return c;
 }
 
-const wchar* KEYWORDS[] = {L"если", L"пока", L"иначе", L"вернуть", L"не", L"брать", L"из", L"функ", L"нч", L"кн"};
+const wchar* KEYWORDS[] = {L"если", L"пока", L"иначе", L"вернуть", L"не", L"брать", L"из", L"функ", L"нч", L"кн", L"ИСТИНА", L"ЛОЖЬ"};
 const wchar* STDFUNC[] = {L"печать", L"ввод", L"промежуток"};
-const wchar* BIN_OP = L"+-=*/^!><";
+const wchar* BIN_OP = L"+-=*/^><";
+const wchar* BIN_OPS[] = {L"и", L"или"};
+
 const wchar* DIGITS = L"0123456789.";
 const wchar* SPEC = L";,()\"";
 
@@ -78,27 +80,30 @@ tk_node* lexing(wchar* file)
         sym = *(file+i);
         if(wcschr(SPEC, sym) != NULL)
         {
-            emp_str(str)
+            emp_str(str);
             push_node(symbols, new_node(SPECIAL, str, pos));
         }
         else if(sym == L'\n')
         {
             pos.y++;
             pos.x = 0;
+            emp_str(str);
+            *str = L' ';
+            push_node(symbols, new_node(SYMBOL, str, pos));
         }
         else if(wcschr(BIN_OP, sym) != NULL)
         {
-            emp_str(str)
+            emp_str(str);
             push_node(symbols, new_node(BINARY, str, pos));
         }
         else if(wcschr(DIGITS, sym) != NULL)
         {
-            emp_str(str)
+            emp_str(str);
             push_node(symbols, new_node(DIGIT, str, pos));
         }
         else
         {
-            emp_str(str)
+            emp_str(str);
             push_node(symbols, new_node(SYMBOL, str, pos));          
         }
         if(sym != L'\n') pos.x++;
@@ -207,7 +212,20 @@ tk_node* lexing(wchar* file)
                 
             }
             }
+            if(!temp)
+            {
+            for(size_t i = 0; i < sizeof(BIN_OPS)/sizeof(wchar*); ++i)
+            {
+                if(wcscmp(str, BIN_OPS[i]) == 0)
+                {
+                    push_node(main, new_node(BINARY, str, pos));
+                    temp++;
+                }
+                
+            }
+            }
             if(!temp) push_node(main, new_node(PLAIN, str, pos));
+
 
             symbols = symbols->previous;
         }
@@ -219,7 +237,7 @@ tk_node* lexing(wchar* file)
                 bm_wcscat(str, symbols->value);
                 symbols = symbols->next;
             }
-            push_node(main, new_node(PLAIN, str, pos));
+            push_node(main, new_node(BINARY, str, pos));
 
             symbols = symbols->previous;
         }
