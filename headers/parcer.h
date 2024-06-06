@@ -21,72 +21,19 @@ typedef enum
 
 }expr_kind;
 
-struct Seque
-{
-    expr_kind kind;
-    void** expretions;
-};
+struct Expretion;
 
-struct Func
-{
-    expr_kind kind;
-    wchar* name;
-    void** args;
-    struct Seque* body;
-};
+struct Seque;
+struct Func;
+struct Call;
+struct IF;
+struct Number;
+struct String;
+struct Boolean;
+struct Variable;
+struct Assign;
+struct Array;
 
-struct Call
-{
-    expr_kind kind;
-    wchar* name;
-    void** args;
-};
-
-struct If
-{
-    expr_kind kind;
-    void* condition;
-    void* then;
-    void* els;
-};
-
-struct Number
-{
-    expr_kind kind;
-    wchar* value;
-};
-
-struct String
-{
-    expr_kind kind;
-    wchar* value;
-};
-
-struct Boolean
-{
-    expr_kind kind;
-    int value;
-};
-
-struct Variable
-{
-    expr_kind kind;
-    wchar* name;
-};
-
-struct Assign
-{
-    expr_kind kind;
-    struct Variable left;
-    void* right;
-};
-
-struct Binary
-{
-    expr_kind kind;
-    void* left;
-    void* right;
-};
 
 void* create_expr(expr_kind);
 void delete_expr(void*);
