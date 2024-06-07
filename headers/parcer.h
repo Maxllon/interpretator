@@ -33,6 +33,7 @@ struct Boolean;
 struct Variable;
 struct Assign;
 struct Array;
+struct Binary;
 
 
 void* create_expr(expr_kind);
