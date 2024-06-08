@@ -13,9 +13,12 @@ int main(int argc, char *argv[])
     if(out_file) wprintf(L"%ls\n\n\n\n",file);
 
     tk_node* main = lexing(file);
+
+    struct Expretion* expr = parce(main);
+
     delete_tk_list(main);
     bm_free(file);
-    delete_expr(NULL);
+    delete_expr(expr);
     system("pause");
     return 0;
 }

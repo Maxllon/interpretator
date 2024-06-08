@@ -46,6 +46,91 @@ typedef struct
 struct Expretion* at(expretion_Vector*, size_t);
 void push_back(expretion_Vector*, struct Expretion*);
 
+struct Expretion
+{
+    expr_kind kind;
+    union expr
+    {
+        struct Seque *seque;
+        struct Func *func;
+        struct Call *call;
+        struct IF *If;
+        struct Number *number;
+        struct String *string;
+        struct Boolean *boolean;
+        struct Variable *variable;
+        struct Assign *assign;
+        struct Array *array;
+        struct Binary *binary;
+    };
+};
+struct Seque
+{
+    expretion_Vector expretions;
+};
+
+struct Func
+{
+    wchar *name;
+
+    expretion_Vector arguments;
+
+    struct Expretion *body;
+};
+
+struct Call
+{
+    wchar *name;
+
+    expretion_Vector arguments;
+};
+
+struct IF
+{
+    struct Expretion *cond;
+    struct Expretion *then;
+    struct Expretion *els;
+};
+
+struct Number
+{
+    wchar *value;
+};
+
+struct String
+{
+    wchar *value;
+};
+
+struct Boolean
+{
+    wchar *value;
+};
+
+struct Variable
+{
+    wchar *name;
+};
+
+struct Assign
+{
+    struct Expretion *var;
+    struct Expretion *right;
+};
+
+struct Array
+{
+    expretion_Vector expretions;
+};
+
+struct Binary
+{
+    struct Expretion *right;
+    struct Expretion *left;
+
+    wchar *op;
+};
+
 //create expr functions
 struct Expretion* create_empty_expr(expr_kind);
 struct Seque* create_empty_seque(void);
@@ -82,11 +167,20 @@ typedef struct
     size_t priority;
 
 }op_priority;
+size_t find_priority(const wchar*);
 
+//parce functions
 struct Expretion* parce(tk_node* main);
 struct Expretion* parce_expr(void);
 struct Expretion* parce_atom(void);
 struct Expretion* mb_binary(struct Expretion*, size_t);
+
+//output functions
+void out_expretion(struct Expretion*, size_t);
+void out_seque(struct Seque*, size_t);
+void out_binary(struct Binary*, size_t);
+void out_number(struct Number*, size_t);
+void out_variable(struct Variable*, size_t);
 
 
 #endif

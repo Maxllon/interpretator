@@ -15,6 +15,7 @@
 #define wchar wchar_t
 #define expan ".txt"
 #define fbuf 10000
+#define INDENT 4
 
 //functions
 #define bm_wcscat(str1, str2) {str1 = realloc(str1, 2*(wcslen(str2) + wcslen(str1) + 1)); wcscat(str1, str2);}
@@ -26,5 +27,6 @@
 #define out_symbols 1
 #define out_tklist 1
 #define out_file 1
+#define out_tree 1
 
 #endif

@@ -1,90 +1,5 @@
 #include "parcer.h"
 
-struct Expretion
-{
-    expr_kind kind;
-    union expr
-    {
-        struct Seque *seque;
-        struct Func *func;
-        struct Call *call;
-        struct IF *If;
-        struct Number *number;
-        struct String *string;
-        struct Boolean *boolean;
-        struct Variable *variable;
-        struct Assign *assign;
-        struct Array *array;
-        struct Binary *binary;
-    };
-};
-struct Seque
-{
-    expretion_Vector expretions;
-};
-
-struct Func
-{
-    wchar *name;
-
-    expretion_Vector arguments;
-
-    struct Expretion *body;
-};
-
-struct Call
-{
-    wchar *name;
-
-    expretion_Vector arguments;
-};
-
-struct IF
-{
-    struct Expretion *cond;
-    struct Expretion *then;
-    struct Expretion *els;
-};
-
-struct Number
-{
-    wchar *value;
-};
-
-struct String
-{
-    wchar *value;
-};
-
-struct Boolean
-{
-    wchar *value;
-};
-
-struct Variable
-{
-    wchar *name;
-};
-
-struct Assign
-{
-    struct Expretion *var;
-    struct Expretion *right;
-};
-
-struct Array
-{
-    expretion_Vector expretions;
-};
-
-struct Binary
-{
-    struct Expretion *right;
-    struct Expretion *left;
-
-    wchar *op;
-};
-
 struct Expretion *create_empty_expr(expr_kind kind)
 {
     struct Expretion *expr = malloc(sizeof(struct Expretion));
@@ -267,7 +182,7 @@ void delete_expr(struct Expretion *expr)
         exit(1);
         break;
     }
-    free(expr);
+    bm_free(expr);
 }
 void delete_seque(struct Seque *seque)
 {
@@ -275,8 +190,8 @@ void delete_seque(struct Seque *seque)
     {
         delete_expr(*(seque->expretions.expr + i));
     }
-    free(seque->expretions.expr);
-    free(seque);
+    bm_free(seque->expretions.expr);
+    bm_free(seque);
 }
 void delete_func(struct Func *func)
 {
@@ -284,10 +199,10 @@ void delete_func(struct Func *func)
     {
         delete_expr(*(func->arguments.expr + i));
     }
-    free(func->name);
+    bm_free(func->name);
     delete_expr(func->body);
-    free(func->arguments.expr);
-    free(func);
+    bm_free(func->arguments.expr);
+    bm_free(func);
 }
 void delete_call(struct Call *call)
 {
@@ -295,42 +210,42 @@ void delete_call(struct Call *call)
     {
         delete_expr(*(call->arguments.expr + i));
     }
-    free(call->name);
-    free(call->arguments.expr);
-    free(call);
+    bm_free(call->name);
+    bm_free(call->arguments.expr);
+    bm_free(call);
 }
 void delete_if(struct IF *If)
 {
     delete_expr(If->cond);
     delete_expr(If->then);
     delete_expr(If->els);
-    free(If);
+    bm_free(If);
 }
 void delete_number(struct Number *num)
 {
-    free(num->value);
-    free(num);
+    bm_free(num->value);
+    bm_free(num);
 }
 void delete_string(struct String *str)
 {
-    free(str->value);
-    free(str);
+    bm_free(str->value);
+    bm_free(str);
 }
 void delete_boolean(struct Boolean *boolean)
 {
-    free(boolean->value);
-    free(boolean);
+    bm_free(boolean->value);
+    bm_free(boolean);
 }
 void delete_variable(struct Variable *var)
 {
-    free(var->name);
-    free(var);
+    bm_free(var->name);
+    bm_free(var);
 }
 void delete_assign(struct Assign *assign)
 {
     delete_expr(assign->var);
     delete_expr(assign->right);
-    free(assign);
+    bm_free(assign);
 }
 void delete_array(struct Array *array)
 {
@@ -338,15 +253,15 @@ void delete_array(struct Array *array)
     {
         delete_expr(*(array->expretions.expr + i));
     }
-    free(array->expretions.expr);
-    free(array);
+    bm_free(array->expretions.expr);
+    bm_free(array);
 }
 void delete_binary(struct Binary *bin)
 {
     delete_expr(bin->left);
     delete_expr(bin->right);
-    free(bin->op);
-    free(bin);
+    bm_free(bin->op);
+    bm_free(bin);
 }
 
 struct Expretion *at(expretion_Vector* expretions, size_t index)
@@ -354,6 +269,7 @@ struct Expretion *at(expretion_Vector* expretions, size_t index)
     if (index > expretions->len)
     {
         printf("Error: index is out of range!\n");
+        system("pause");
         exit(1);
     }
     return *(expretions->expr + index);
@@ -366,7 +282,7 @@ void push_back(expretion_Vector* expretions, struct Expretion* expr)
     {
         expretions->expr = realloc(expretions->expr, expretions->size + 100);
     }
-    *(expretions->expr + expretions->len) = expr;
+    *(expretions->expr + expretions->len - 1) = expr;
 }
 
 static tk_node *tk_list = NULL;
@@ -378,12 +294,15 @@ int skip(wchar *str)
         tk_list = tk_list->next;
         return 0;
     }
+    wprintf(L"Error: cant skip: %ls\n", str);
+    system("pause");
     return 1;
 }
 
 struct Expretion *parce(tk_node *main)
 {
     tk_list = main;
+    tk_list = tk_list->next;
     struct Expretion *expr = create_empty_expr(SEQUE_EXPR);
 
     while (tk_list->kind != END)
@@ -391,18 +310,48 @@ struct Expretion *parce(tk_node *main)
         push_back(&expr->seque->expretions, parce_expr());
         skip(L";");
     }
-
+    if(out_tree) out_expretion(expr, 0);
     return expr;
 }
 
 struct Expretion *parce_expr(void)
 {
-    return parce_atom();
+    return mb_binary(parce_atom(), 0);
 }
 
 struct Expretion* parce_atom(void)
 {
-    
+    struct Expretion* expr;
+    if(wcscmp(L"(", tk_list->value) == 0)
+    {
+        tk_list = tk_list->next;
+        expr = parce_expr();
+        skip(L")");
+        return expr;
+    }
+
+    switch(tk_list->kind)
+    {
+        case NUMBER:
+            expr = create_empty_expr(NUMBER_EXPR);
+            expr->number->value = malloc(wcslen(tk_list->value)*2+2);
+            wcscpy(expr->number->value, tk_list->value);
+            break;
+        case STRING:
+            expr = create_empty_expr(STRING_EXPR);
+            expr->string->value = malloc(wcslen(tk_list->value)*2+2);
+            wcscpy(expr->string->value, tk_list->value);
+            break;
+        case VARIABLE:
+            expr = create_empty_expr(VARIABLE);
+            expr->variable->name = malloc(wcslen(tk_list->value)*2+2);
+            wcscpy(expr->variable->name, tk_list->value);
+            break;
+        default:
+            break;
+    }
+    tk_list = tk_list->next;
+    return expr;
 }
 
 static op_priority operators[] = 
@@ -428,14 +377,133 @@ static op_priority operators[] =
     {L"\%", 6},
     {L"//", 6},
     
-    {L"^", 7},
+    {L"^", 7}
 };
+
+size_t find_priority(const wchar* op)
+{
+    for(size_t i = 0; i < sizeof(operators)/sizeof(op_priority); ++i)
+    {
+        if(wcscmp(op, operators[i].operator)) return operators[i].priority;
+    }
+    wprintf(L"Cant find this op: %ls\n", op);
+    system("pause");
+    exit(1);
+}
 
 struct Expretion* mb_binary(struct Expretion* left, size_t priority)
 {
+    wchar* op = tk_list->value;
     if(tk_list->kind == BINARY)
     {
-
+        size_t his_prior = find_priority(tk_list->value);
+        if(his_prior > priority)
+        {
+            tk_list = tk_list->next;
+            struct Expretion* right = mb_binary(parce_atom(), his_prior);
+            struct Expretion* expr = create_empty_expr(BINARY_EXPR);
+            expr->binary->left = left;
+            expr->binary->right = right;
+            expr->binary->op = malloc(wcslen(op)+2);
+            wcscpy(expr->binary->op, op);
+            return mb_binary(expr, priority);
+        }
     }
     return left;
+}
+
+void out_expretion(struct Expretion* expr, size_t indent)
+{
+    switch(expr->kind)
+    {
+        case SEQUE_EXPR:
+            out_seque(expr->seque, indent);
+            break;
+        case NUMBER_EXPR:
+            out_number(expr->number, indent);
+            break;
+        case BINARY_EXPR:
+            out_binary(expr->binary, indent);
+            break;
+        case VARIABLE_EXPR:
+            out_variable(expr->variable, indent);
+            break;
+        default:
+            break;
+    }
+}
+
+void out_seque(struct Seque* seque, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsType: seque\n", str);
+    wprintf(L"%lsBody:\n", str);
+    wprintf(L"%ls{\n", str);
+    for(size_t i = 0; i < seque->expretions.len; ++i)
+    {
+        out_expretion(at(&seque->expretions, i), indent+INDENT);
+    }
+
+    wprintf(L"%ls}\n", str);
+    free(str);
+}
+
+void out_binary(struct Binary* bin, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsType: binary\n", str);
+    wprintf(L"%lsOp: %ls\n", str, bin->op);
+
+    wprintf(L"%lsLeft:\n", str);
+    wprintf(L"%ls{\n", str);
+    out_expretion(bin->left, indent+INDENT);
+    wprintf(L"%ls}\n", str);
+
+    wprintf(L"%lsRight:\n", str);
+    wprintf(L"%ls{\n", str);
+    out_expretion(bin->right, indent+INDENT);
+    wprintf(L"%ls}\n", str);
+    free(str);
+}
+
+void out_number(struct Number* num, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsType: number\n", str);
+    wprintf(L"%lsValue: %ls\n", str, num->value);
+
+    free(str);
+}
+
+void out_variable(struct Variable* var, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsType: variable\n", str);
+    wprintf(L"%lsName: %ls\n", str, var->name);
+
+    free(str);
 }
