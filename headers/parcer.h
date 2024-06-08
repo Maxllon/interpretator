@@ -36,6 +36,15 @@ struct Assign;
 struct Array;
 struct Binary;
 
+//expretion vector
+typedef struct
+{   
+    struct Expretion** expr;
+    size_t size;
+    size_t len;
+}expretion_Vector;
+struct Expretion* at(expretion_Vector*, size_t);
+void push_back(expretion_Vector*, struct Expretion*);
 
 //create expr functions
 struct Expretion* create_empty_expr(expr_kind);
@@ -65,5 +74,19 @@ void delete_variable(struct Variable*);
 void delete_assign(struct Assign*);
 void delete_array(struct Array*);
 void delete_binary(struct Binary*);
+
+
+typedef struct 
+{
+    wchar* operator;
+    size_t priority;
+
+}op_priority;
+
+struct Expretion* parce(tk_node* main);
+struct Expretion* parce_expr(void);
+struct Expretion* parce_atom(void);
+struct Expretion* mb_binary(struct Expretion*, size_t);
+
 
 #endif

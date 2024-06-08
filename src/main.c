@@ -4,6 +4,7 @@
 #include "includes.h"
 #include "read_file.h"
 #include "lexer.h"
+#include "parcer.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
     tk_node* main = lexing(file);
     delete_tk_list(main);
     bm_free(file);
+    delete_expr(NULL);
     system("pause");
     return 0;
 }
