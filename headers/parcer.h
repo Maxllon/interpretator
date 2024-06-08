@@ -17,7 +17,8 @@ typedef enum
     VARIABLE_EXPR,
 
     ASSIGN_EXPR,
-    BINARY_EXPR
+    BINARY_EXPR,
+    ARRAY_EXPR
 
 }expr_kind;
 
@@ -36,11 +37,33 @@ struct Array;
 struct Binary;
 
 
-void* create_expr(expr_kind);
-void delete_expr(void*);
+//create expr functions
+struct Expretion* create_empty_expr(expr_kind);
+struct Seque* create_empty_seque(void);
+struct Func* create_empty_func(void);
+struct Call* create_empty_call(void);
+struct IF* create_empty_if(void);
+struct Number* create_empty_number(void);
+struct String* create_empty_string(void);
+struct Boolean* create_empty_boolean(void);
+struct Variable* create_empty_variable(void);
+struct Assign* create_empty_assign(void);
+struct Array* create_empty_array(void);
+struct Binary* create_empty_binary(void);
 
-struct Seque* parce(tk_node*);
 
-void* parce_expr(tk_node*);
+//delete expretion functions
+void delete_expr(struct Expretion*);
+void delete_seque(struct Seque*);
+void delete_func(struct Func*);
+void delete_call(struct Call*);
+void delete_if(struct IF*);
+void delete_number(struct Number*);
+void delete_string(struct String*);
+void delete_boolean(struct Boolean*);
+void delete_variable(struct Variable*);
+void delete_assign(struct Assign*);
+void delete_array(struct Array*);
+void delete_binary(struct Binary*);
 
 #endif

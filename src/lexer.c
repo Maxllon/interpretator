@@ -58,10 +58,10 @@ int count(wchar* str, wchar symb)
     return c;
 }
 
-const wchar* KEYWORDS[] = {L"если", L"пока", L"иначе", L"вернуть", L"не", L"брать", L"из", L"функ", L"нч", L"кн", L"ИСТИНА", L"ЛОЖЬ"};
-const wchar* STDFUNC[] = {L"печать", L"ввод", L"промежуток"};
+const wchar* KEYWORDS[] = {L"коли", L"доселе", L"инако", L"обрати", L"не", L"вернуть", L"из", L"служ", L"нч", L"кн", L"БЫЛЬ", L"БЛЯДЬ"};
+const wchar* STDFUNC[] = {L"покажи", L"взимать", L"межа"};
 const wchar* BIN_OP = L"+-=*/^><";
-const wchar* BIN_OPS[] = {L"и", L"или"};
+const wchar* BIN_OPS[] = {L"и", L"або"};
 
 const wchar* DIGITS = L"0123456789.";
 const wchar* SPEC = L";,()[]\"";
