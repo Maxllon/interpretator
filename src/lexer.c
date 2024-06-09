@@ -218,13 +218,13 @@ tk_node* lexing(wchar* file)
             {
                 if(wcscmp(str, BIN_OPS[i]) == 0)
                 {
-                    push_node(main, new_node(BINARY, str, pos));
+                    push_node(main, new_node(VARIABLE, str, pos));
                     temp++;
                 }
                 
             }
             }
-            if(!temp) push_node(main, new_node(PLAIN, str, pos));
+            if(!temp) push_node(main, new_node(VARIABLE, str, pos));
 
 
             symbols = symbols->previous;

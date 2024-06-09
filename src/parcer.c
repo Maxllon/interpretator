@@ -289,12 +289,18 @@ static tk_node *tk_list = NULL;
 
 int skip(wchar *str)
 {
+    if(tk_list->kind == END)
+    {
+        wprintf(L"Ошибка: упущен символ <%ls> в позиции <%d><%d>\n", str, tk_list->pos.x, tk_list->pos.y);
+        system("pause");
+        return 1;
+    }
     if (wcscmp(tk_list->value, str) == 0)
     {
         tk_list = tk_list->next;
         return 0;
     }
-    wprintf(L"Error: cant skip: %ls\n", str);
+    wprintf(L"Ошибка: упущен символ <%ls> в позиции <%d><%d>\n", str, tk_list->pos.x, tk_list->pos.y);
     system("pause");
     return 1;
 }
@@ -343,7 +349,7 @@ struct Expretion* parce_atom(void)
             wcscpy(expr->string->value, tk_list->value);
             break;
         case VARIABLE:
-            expr = create_empty_expr(VARIABLE);
+            expr = create_empty_expr(VARIABLE_EXPR);
             expr->variable->name = malloc(wcslen(tk_list->value)*2+2);
             wcscpy(expr->variable->name, tk_list->value);
             break;
@@ -442,8 +448,8 @@ void out_seque(struct Seque* seque, size_t indent)
     }
     *(str+indent) = L'\0';
 
-    wprintf(L"%lsType: seque\n", str);
-    wprintf(L"%lsBody:\n", str);
+    wprintf(L"%lsТип: последовательность\n", str);
+    wprintf(L"%lsТело:\n", str);
     wprintf(L"%ls{\n", str);
     for(size_t i = 0; i < seque->expretions.len; ++i)
     {
@@ -463,15 +469,15 @@ void out_binary(struct Binary* bin, size_t indent)
     }
     *(str+indent) = L'\0';
 
-    wprintf(L"%lsType: binary\n", str);
-    wprintf(L"%lsOp: %ls\n", str, bin->op);
+    wprintf(L"%lsТип: бинарный\n", str);
+    wprintf(L"%lsОператор: %ls\n", str, bin->op);
 
-    wprintf(L"%lsLeft:\n", str);
+    wprintf(L"%lsСлева:\n", str);
     wprintf(L"%ls{\n", str);
     out_expretion(bin->left, indent+INDENT);
     wprintf(L"%ls}\n", str);
 
-    wprintf(L"%lsRight:\n", str);
+    wprintf(L"%lsСправа:\n", str);
     wprintf(L"%ls{\n", str);
     out_expretion(bin->right, indent+INDENT);
     wprintf(L"%ls}\n", str);
@@ -487,8 +493,8 @@ void out_number(struct Number* num, size_t indent)
     }
     *(str+indent) = L'\0';
 
-    wprintf(L"%lsType: number\n", str);
-    wprintf(L"%lsValue: %ls\n", str, num->value);
+    wprintf(L"%lsТип: число\n", str);
+    wprintf(L"%lsЗначение: %ls\n", str, num->value);
 
     free(str);
 }
@@ -502,8 +508,8 @@ void out_variable(struct Variable* var, size_t indent)
     }
     *(str+indent) = L'\0';
 
-    wprintf(L"%lsType: variable\n", str);
-    wprintf(L"%lsName: %ls\n", str, var->name);
+    wprintf(L"%lsТип: переменнная\n", str);
+    wprintf(L"%lsИмя: %ls\n", str, var->name);
 
     free(str);
 }
