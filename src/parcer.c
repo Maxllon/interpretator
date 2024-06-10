@@ -340,6 +340,7 @@ struct Expretion* parce_atom(void)
     {
         case KEYWORD:
             if(wcscmp(tk_list->value, L"коли") == 0) return parce_if();
+            if(wcscmp(tk_list->value, L"нч") == 0) return parce_seque();
             break;
         case NUMBER:
             expr = create_empty_expr(NUMBER_EXPR);
@@ -462,6 +463,20 @@ struct Expretion* parce_if(void)
     }
 
     else expr->If->els = NULL;
+    return expr;
+}
+
+struct Expretion* parce_seque(void)
+{
+    tk_list = tk_list->next;
+    struct Expretion *expr = create_empty_expr(SEQUE_EXPR);
+
+    while (wcscmp(tk_list->value, L"кц") != 0)
+    {
+        push_back(&expr->seque->expretions, parce_expr());
+        skip(L";");
+    }
+    tk_list = tk_list->next;
     return expr;
 }
 

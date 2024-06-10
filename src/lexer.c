@@ -58,7 +58,7 @@ int count(wchar* str, wchar symb)
     return c;
 }
 
-const wchar* KEYWORDS[] = {L"коли", L"доселе", L"инако", L"обрати", L"не", L"вернуть", L"из", L"служ", L"нч", L"кн", L"БЫЛЬ", L"БЛЯДЬ", L"то"};
+const wchar* KEYWORDS[] = {L"коли", L"доселе", L"инако", L"обрати", L"не", L"вернуть", L"из", L"служ", L"нч", L"кц", L"БЫЛЬ", L"БЛЯДЬ", L"то"};
 const wchar* STDFUNC[] = {L"покажи", L"взимать", L"межа"};
 const wchar* BIN_OP = L"+-=*/^>!<\%";
 const wchar* BIN_OPS[] = {L"и", L"або"};
