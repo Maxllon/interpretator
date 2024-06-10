@@ -174,6 +174,8 @@ struct Expretion* parce(tk_node* main);
 struct Expretion* parce_expr(void);
 struct Expretion* parce_atom(void);
 struct Expretion* mb_binary(struct Expretion*, size_t);
+struct Expretion* parce_if(void);
+struct Expretion* parce_seque(void);
 
 //output functions
 void out_expretion(struct Expretion*, size_t);
@@ -181,6 +183,9 @@ void out_seque(struct Seque*, size_t);
 void out_binary(struct Binary*, size_t);
 void out_number(struct Number*, size_t);
 void out_variable(struct Variable*, size_t);
+void out_string(struct String*, size_t);
+void out_if(struct IF*, size_t);
+void out_seque(struct Seque*, size_t);
 
 
 #endif

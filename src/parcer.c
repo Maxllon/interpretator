@@ -338,6 +338,9 @@ struct Expretion* parce_atom(void)
 
     switch(tk_list->kind)
     {
+        case KEYWORD:
+            if(wcscmp(tk_list->value, L"коли") == 0) return parce_if();
+            break;
         case NUMBER:
             expr = create_empty_expr(NUMBER_EXPR);
             expr->number->value = malloc(wcslen(tk_list->value)*2+2);
@@ -434,9 +437,32 @@ void out_expretion(struct Expretion* expr, size_t indent)
         case VARIABLE_EXPR:
             out_variable(expr->variable, indent);
             break;
+        case IF_EXPR:
+            out_if(expr->If, indent);
+            break;
+        case STRING_EXPR:
+            out_string(expr->string, indent);
+            break;
         default:
             break;
     }
+}
+
+struct Expretion* parce_if(void)
+{
+    tk_list = tk_list->next;
+    struct Expretion* expr = create_empty_expr(IF_EXPR);
+    expr->If->cond = parce_expr();
+    skip(L"то");
+    expr->If->then = parce_expr();
+    if(wcscmp(tk_list->value, L"инако") == 0)
+    {
+        tk_list = tk_list->next;
+        expr->If->els = parce_expr();
+    }
+
+    else expr->If->els = NULL;
+    return expr;
 }
 
 void out_seque(struct Seque* seque, size_t indent)
@@ -512,4 +538,49 @@ void out_variable(struct Variable* var, size_t indent)
     wprintf(L"%lsИмя: %ls\n", str, var->name);
 
     free(str);
+}
+
+void out_string(struct String* string, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: строка\n", str);
+    wprintf(L"%lsЗначение: %ls\n", str, string->value);
+
+    free(str);
+}
+
+void out_if(struct IF* If, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: ветвление\n", str);
+    wprintf(L"%lsУсловие:\n", str);
+    wprintf(L"%ls{\n", str);
+    out_expretion(If->cond, indent+INDENT);
+    wprintf(L"%ls}\n", str);
+
+    wprintf(L"%lsВыражение при \"ИСТИНА\":\n", str);
+    wprintf(L"%ls{\n", str);
+    out_expretion(If->then, indent+INDENT);
+    wprintf(L"%ls}\n", str);
+
+    if(If->els != NULL)
+    {
+    wprintf(L"%lsВыражение при \"ЛОЖЬ\":\n", str);
+    wprintf(L"%ls{\n", str);
+    out_expretion(If->els, indent+INDENT);
+    wprintf(L"%ls}\n", str);
+    }
+
 }
