@@ -64,7 +64,7 @@ const wchar* BIN_OP = L"+-=*/^>!<\%";
 const wchar* BIN_OPS[] = {L"и", L"або"};
 
 const wchar* DIGITS = L"0123456789.";
-const wchar* SPEC = L";,()[]:\"";
+const wchar* SPEC = L";,()[]{}:\"";
 
 tk_node* lexing(wchar* file)
 {

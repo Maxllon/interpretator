@@ -228,6 +228,7 @@ struct Expretion* parce_call(void);
 struct Expretion* parce_return(void);
 struct Expretion* parce_while(void);
 struct Expretion* parce_foreach(void);
+struct Expretion* parce_array(void);
 
 //output functions
 void out_expretion(struct Expretion*, size_t);
@@ -246,5 +247,6 @@ void out_void(size_t);
 void out_boolean(struct Boolean*, size_t);
 void out_while(struct While*, size_t);
 void out_foreach(struct Foreach*, size_t);
+void out_array(struct Array*, size_t);
 
 #endif

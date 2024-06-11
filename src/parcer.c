@@ -424,7 +424,7 @@ struct Expretion* parce_atom(void)
         skip(L")");
         return expr;
     }
-
+    if(wcscmp(L"{", tk_list->value) == 0) return parce_array();
     switch(tk_list->kind)
     {
         case KEYWORD:
@@ -574,6 +574,9 @@ void out_expretion(struct Expretion* expr, size_t indent)
         case WHILE_EXPR:
             out_while(expr->while_t, indent);
             break;
+        case ARRAY_EXPR:
+            out_array(expr->array, indent);
+            break;
         default:
             printf("Error: uncorrectly expretion kind!\n");
             system("pause");
@@ -699,6 +702,21 @@ struct Expretion* parce_foreach(void)
     return expr;
 }
 
+struct Expretion* parce_array(void)
+{
+    tk_list = tk_list->next;
+
+    struct Expretion* expr = create_empty_expr(ARRAY_EXPR);
+
+    while(wcscmp(tk_list->value, L"}") != 0)
+    {
+        push_back(&expr->array->expretions, parce_expr());
+        if(wcscmp(tk_list->value, L"}") != 0) skip(L",");
+    }
+    skip(L"}");
+    return expr;
+}
+
 void out_seque(struct Seque* seque, size_t indent)
 {
     wchar* str = malloc(2*indent+2);
@@ -742,6 +760,11 @@ void out_func(struct Func* func, size_t indent)
     wprintf(L"%ls(\n", str);
     for(size_t i = 0; i < func->arguments.len; ++i)
     {
+        for(size_t j = 0; j < INDENT; ++j)
+        {
+            wprintf(L" ");
+        }
+        wprintf(L"%ls<%d>\n", str, i+1);
         out_expretion(at(&func->arguments, i), indent+INDENT);
     }
     wprintf(L"%ls)\n", str);
@@ -770,6 +793,11 @@ void out_call(struct Call* call, size_t indent)
     wprintf(L"%ls(\n", str);
     for(size_t i = 0; i < call->arguments.len; ++i)
     {
+        for(size_t j = 0; j < INDENT; ++j)
+        {
+            wprintf(L" ");
+        }
+        wprintf(L"%ls<%d>\n", str, i+1);
         out_expretion(at(&call->arguments, i), indent+INDENT);
     }
     wprintf(L"%ls)\n", str);
@@ -990,4 +1018,32 @@ void out_foreach(struct Foreach* foreach, size_t indent)
     wprintf(L"%ls}\n", str);
 
     free(str);  
+}
+
+void out_array(struct Array* array, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: список\n", str);
+
+    wprintf(L"%lsЭлементы:\n", str);
+    wprintf(L"%ls[\n", str);
+    for(size_t i = 0; i < array->expretions.len; ++i)
+    {
+        for(size_t j = 0; j < INDENT; ++j)
+        {
+            wprintf(L" ");
+        }
+        wprintf(L"%ls<%d>\n", str, i+1);
+        out_expretion(at(&array->expretions, i), indent+INDENT);
+    }
+    wprintf(L"%ls]\n", str);
+
+
+    free(str);
 }
