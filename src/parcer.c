@@ -1,5 +1,7 @@
 #include "parcer.h"
 
+static tk_node *tk_list = NULL;
+
 struct Expretion *create_empty_expr(expr_kind kind)
 {
     struct Expretion *expr = malloc(sizeof(struct Expretion));
@@ -54,7 +56,7 @@ struct Expretion *create_empty_expr(expr_kind kind)
         expr->foreach = create_empty_foreach();
         break;
     default:
-        printf("Error: uncorrectly expretion kind!\n");
+        wprintf(L"Ошибка: некорректный тип выражения <%d><%d>\n", tk_list->pos.x, tk_list->pos.y);
         exit(1);
         break;
     }
@@ -238,7 +240,7 @@ void delete_expr(struct Expretion *expr)
         delete_foreach(expr->foreach);
         break;
     default:
-        printf("Error: uncorrectly expretion kind!\n");
+        wprintf(L"Ошибка: некорректный тип выражения\n");
         system("pause");
         exit(1);
         break;
@@ -374,14 +376,13 @@ void push_back(expretion_Vector* expretions, struct Expretion* expr)
     *(expretions->expr + expretions->len - 1) = expr;
 }
 
-static tk_node *tk_list = NULL;
-
 int skip(wchar *str)
 {
     if(tk_list->kind == END)
     {
         wprintf(L"Ошибка: упущен символ <%ls> в позиции <%d><%d>\n", str, tk_list->pos.x, tk_list->pos.y);
         system("pause");
+        exit(1);
         return 1;
     }
     if (wcscmp(tk_list->value, str) == 0)
@@ -391,6 +392,7 @@ int skip(wchar *str)
     }
     wprintf(L"Ошибка: упущен символ <%ls> в позиции <%d><%d>\n", str, tk_list->pos.x, tk_list->pos.y);
     system("pause");
+    exit(1);
     return 1;
 }
 
@@ -399,7 +401,6 @@ struct Expretion *parce(tk_node *main)
     tk_list = main;
     tk_list = tk_list->next;
     struct Expretion *expr = create_empty_expr(SEQUE_EXPR);
-
     while (tk_list->kind != END)
     {
         push_back(&expr->seque->expretions, parce_expr());
@@ -458,7 +459,7 @@ struct Expretion* parce_atom(void)
             wcscpy(expr->string->value, tk_list->value);
             break;
         case VARIABLE:
-            if(wcscmp(tk_list->next->value, L"(") == 0) return parce_call();
+            if(tk_list->next->kind != END) if (wcscmp(tk_list->next->value, L"(") == 0) return parce_call();
             expr = create_empty_expr(VARIABLE_EXPR);
             expr->variable->name = malloc(wcslen(tk_list->value)*2+2);
             wcscpy(expr->variable->name, tk_list->value);
@@ -578,7 +579,7 @@ void out_expretion(struct Expretion* expr, size_t indent)
             out_array(expr->array, indent);
             break;
         default:
-            printf("Error: uncorrectly expretion kind!\n");
+            wprintf(L"Ошибка: некорректный тип выражения\n");
             system("pause");
             exit(1);
             break;
@@ -587,6 +588,8 @@ void out_expretion(struct Expretion* expr, size_t indent)
 
 struct Expretion* mb_index(struct Expretion* expr)
 {
+    if(tk_list->kind == SPECIAL)
+    {
     if(wcscmp(tk_list->value, L"[") == 0)
     {
         tk_list = tk_list->next;
@@ -596,6 +599,7 @@ struct Expretion* mb_index(struct Expretion* expr)
         index->index->index = parce_expr();
         skip(L"]");
         return mb_index(index);
+    }
     }
     return expr;
 }

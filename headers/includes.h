@@ -10,12 +10,11 @@
 #include<locale.h>
 
 //constants
-#define u8 uint8_t
-#define u16 uint16_t
 #define wchar wchar_t
 #define expan ".txt"
-#define fbuf 10000
 #define INDENT 4
+typedef int Errno;
+
 
 //functions
 #define bm_wcscat(str1, str2) {str1 = realloc(str1, 2*(wcslen(str2) + wcslen(str1) + 1)); wcscat(str1, str2);}
