@@ -18,7 +18,8 @@ typedef enum
 
     ASSIGN_EXPR,
     BINARY_EXPR,
-    ARRAY_EXPR
+    ARRAY_EXPR,
+    INDEX_EXPR
 
 }expr_kind;
 
@@ -35,6 +36,7 @@ struct Variable;
 struct Assign;
 struct Array;
 struct Binary;
+struct Index;
 
 //expretion vector
 typedef struct
@@ -62,6 +64,7 @@ struct Expretion
         struct Assign *assign;
         struct Array *array;
         struct Binary *binary;
+        struct Index* index;
     };
 };
 struct Seque
@@ -123,6 +126,11 @@ struct Array
     expretion_Vector expretions;
 };
 
+struct Index
+{
+    struct Expretion* index;
+};
+
 struct Binary
 {
     struct Expretion *right;
@@ -144,6 +152,7 @@ struct Variable* create_empty_variable(void);
 struct Assign* create_empty_assign(void);
 struct Array* create_empty_array(void);
 struct Binary* create_empty_binary(void);
+struct Index* create_empty_index(void);
 
 
 //delete expretion functions
@@ -159,6 +168,7 @@ void delete_variable(struct Variable*);
 void delete_assign(struct Assign*);
 void delete_array(struct Array*);
 void delete_binary(struct Binary*);
+void delete_index(struct Index*);
 
 
 typedef struct 

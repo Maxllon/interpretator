@@ -39,6 +39,9 @@ struct Expretion *create_empty_expr(expr_kind kind)
     case ARRAY_EXPR:
         expr->array = create_empty_array();
         break;
+    case INDEX_EXPR:
+        expr->index = create_empty_index();
+        break;
     default:
         printf("Error: uncorrectly expretion kind!\n");
         exit(1);
@@ -136,6 +139,13 @@ struct Binary *create_empty_binary(void)
     bin->op = NULL;
     bin->right = NULL;
     return bin;
+}
+
+struct Index* create_empty_index(void)
+{
+    struct Index* index = malloc(sizeof(struct Index));
+    index->index = NULL;
+    return index;
 }
 
 void delete_expr(struct Expretion *expr)
@@ -262,6 +272,12 @@ void delete_binary(struct Binary *bin)
     delete_expr(bin->right);
     bm_free(bin->op);
     bm_free(bin);
+}
+
+void delete_index(struct Index* index)
+{
+    delete_expr(index->index);
+    bm_free(index);
 }
 
 struct Expretion *at(expretion_Vector* expretions, size_t index)
