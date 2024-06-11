@@ -47,6 +47,12 @@ struct Expretion *create_empty_expr(expr_kind kind)
     case RETURN_EXPR:
         expr->return_t = create_empty_return();
         break;
+    case WHILE_EXPR:
+        expr->while_t = create_empty_while();
+        break;
+    case FOREACH_EXPR:
+        expr->foreach = create_empty_foreach();
+        break;
     default:
         printf("Error: uncorrectly expretion kind!\n");
         exit(1);
@@ -161,6 +167,23 @@ struct Return* create_empty_return(void)
     return return_t;
 }
 
+struct While* create_empty_while(void)
+{
+    struct While* while_t = malloc(sizeof(struct While));
+    while_t->body = NULL;
+    while_t->cond = NULL;
+    return while_t;
+}
+
+struct Foreach* create_empty_foreach(void)
+{
+    struct Foreach* foreach = malloc(sizeof(struct Foreach));
+    foreach->body = NULL;
+    foreach->list = NULL;
+    foreach->var = NULL;
+    return foreach;
+}
+
 void delete_expr(struct Expretion *expr)
 {
     if (expr == NULL)
@@ -207,8 +230,16 @@ void delete_expr(struct Expretion *expr)
         break;
     case RETURN_EXPR:
         delete_return(expr->return_t);
+        break;
+    case WHILE_EXPR:
+        delete_while(expr->while_t);
+        break;
+    case FOREACH_EXPR:
+        delete_foreach(expr->foreach);
+        break;
     default:
         printf("Error: uncorrectly expretion kind!\n");
+        system("pause");
         exit(1);
         break;
     }
@@ -307,6 +338,21 @@ void delete_return(struct Return* return_t)
     bm_free(return_t);
 }
 
+void delete_while(struct While* while_t)
+{
+    delete_expr(while_t->body);
+    delete_expr(while_t->cond);
+    bm_free(while_t);
+}
+
+void delete_foreach(struct Foreach* foreach)
+{
+    delete_expr(foreach->body);
+    delete_expr(foreach->var);
+    delete_expr(foreach->list);
+    bm_free(foreach);
+}
+
 struct Expretion *at(expretion_Vector* expretions, size_t index)
 {
     if (index > expretions->len)
@@ -398,6 +444,8 @@ struct Expretion* parce_atom(void)
                 wcscpy(expr->boolean->value, tk_list->value);
                 break;
             }
+            if(wcscmp(tk_list->value, L"доселе") == 0) return parce_while();
+            if(wcscmp(tk_list->value, L"бери") == 0) return parce_foreach();
             break;
         case NUMBER:
             expr = create_empty_expr(NUMBER_EXPR);
@@ -520,8 +568,15 @@ void out_expretion(struct Expretion* expr, size_t indent)
         case BOOLEAN_EXPR:
             out_boolean(expr->boolean, indent);
             break;
+        case FOREACH_EXPR:
+            out_foreach(expr->foreach, indent);
+            break;
+        case WHILE_EXPR:
+            out_while(expr->while_t, indent);
+            break;
         default:
             printf("Error: uncorrectly expretion kind!\n");
+            system("pause");
             exit(1);
             break;
     }
@@ -547,11 +602,12 @@ struct Expretion* parce_if(void)
     tk_list = tk_list->next;
     struct Expretion* expr = create_empty_expr(IF_EXPR);
     expr->If->cond = parce_expr();
-    skip(L"то");
+    skip(L":");
     expr->If->then = parce_expr();
     if(wcscmp(tk_list->value, L"инако") == 0)
     {
         tk_list = tk_list->next;
+        skip(L":");
         expr->If->els = parce_expr();
     }
 
@@ -589,6 +645,7 @@ struct Expretion* parce_func(void)
         if(wcscmp(tk_list->value, L")") != 0) skip(L",");
     }
     skip(L")");
+    skip(L":");
     expr->func->body = parce_expr();
     return expr;
 }
@@ -618,6 +675,30 @@ struct Expretion* parce_return(void)
     return expr;
 }
 
+struct Expretion* parce_while(void)
+{
+    tk_list = tk_list->next;
+
+    struct Expretion* expr = create_empty_expr(WHILE_EXPR);
+    expr->while_t->cond = parce_expr();
+    skip(L":");
+    expr->while_t->body = parce_expr();
+    return expr;
+}
+
+struct Expretion* parce_foreach(void)
+{
+    tk_list = tk_list->next;
+
+    struct Expretion* expr = create_empty_expr(FOREACH_EXPR);
+    expr->foreach->var = parce_expr();
+    skip(L"из");
+    expr->foreach->list = parce_expr();
+    skip(L":");
+    expr->foreach->body = parce_expr();
+    return expr;
+}
+
 void out_seque(struct Seque* seque, size_t indent)
 {
     wchar* str = malloc(2*indent+2);
@@ -633,6 +714,11 @@ void out_seque(struct Seque* seque, size_t indent)
     wprintf(L"%ls{\n", str);
     for(size_t i = 0; i < seque->expretions.len; ++i)
     {
+        for(size_t j = 0; j < INDENT; ++j)
+        {
+            wprintf(L" ");
+        }
+        wprintf(L"%ls<%d>\n", str, i+1);
         out_expretion(at(&seque->expretions, i), indent+INDENT);
     }
     wprintf(L"%ls}\n", str);
@@ -856,4 +942,52 @@ void out_boolean(struct Boolean* boolean, size_t indent)
     wprintf(L"%lsЗначение: %ls\n", str, boolean->value);
 
     free(str); 
+}
+
+void out_while(struct While* while_t, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: цикл пока\n", str);
+
+    wprintf(L"%lsУсловие:\n", str);
+    wprintf(L"%ls{\n", str);
+    out_expretion(while_t->cond, indent+INDENT);
+    wprintf(L"%ls}\n", str);
+
+    wprintf(L"%lsТело:\n", str);
+    wprintf(L"%ls{\n", str);
+    out_expretion(while_t->body, indent+INDENT);
+    wprintf(L"%ls}\n", str);
+
+    free(str);  
+}
+
+void out_foreach(struct Foreach* foreach, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: цикл обхода коллекции\n", str);
+
+    wprintf(L"%lsПеременная:\n", str);
+    wprintf(L"%ls{\n", str);
+    out_expretion(foreach->var, indent+INDENT);
+    wprintf(L"%ls}\n", str);
+
+    wprintf(L"%lsТело:\n", str);
+    wprintf(L"%ls{\n", str);
+    out_expretion(foreach->body, indent+INDENT);
+    wprintf(L"%ls}\n", str);
+
+    free(str);  
 }

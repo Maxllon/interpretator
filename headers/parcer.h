@@ -21,7 +21,10 @@ typedef enum
     ARRAY_EXPR,
     INDEX_EXPR,
     RETURN_EXPR,
-    VOID_EXPR
+    VOID_EXPR,
+
+    WHILE_EXPR,
+    FOREACH_EXPR
 
 }expr_kind;
 
@@ -40,6 +43,8 @@ struct Array;
 struct Binary;
 struct Index;
 struct Return;
+struct While;
+struct Foreach;
 
 //expretion vector
 typedef struct
@@ -69,6 +74,8 @@ struct Expretion
         struct Binary *binary;
         struct Index* index;
         struct Return* return_t;
+        struct While* while_t;
+        struct Foreach* foreach;
     };
 };
 struct Seque
@@ -149,6 +156,19 @@ struct Return
     struct Expretion* value;
 };
 
+struct While
+{
+    struct Expretion* cond;
+    struct Expretion* body;
+};
+
+struct Foreach
+{
+    struct Expretion* var;
+    struct Expretion* list;
+    struct Expretion* body;
+};
+
 //create expr functions
 struct Expretion* create_empty_expr(expr_kind);
 struct Seque* create_empty_seque(void);
@@ -164,6 +184,8 @@ struct Array* create_empty_array(void);
 struct Binary* create_empty_binary(void);
 struct Index* create_empty_index(void);
 struct Return* create_empty_return(void);
+struct While* create_empty_while(void);
+struct Foreach* create_empty_foreach(void);
 
 
 //delete expretion functions
@@ -181,6 +203,8 @@ void delete_array(struct Array*);
 void delete_binary(struct Binary*);
 void delete_index(struct Index*);
 void delete_return(struct Return*);
+void delete_while(struct While*);
+void delete_foreach(struct Foreach*);
 
 
 typedef struct 
@@ -202,6 +226,8 @@ struct Expretion* parce_seque(void);
 struct Expretion* parce_func(void);
 struct Expretion* parce_call(void);
 struct Expretion* parce_return(void);
+struct Expretion* parce_while(void);
+struct Expretion* parce_foreach(void);
 
 //output functions
 void out_expretion(struct Expretion*, size_t);
@@ -218,5 +244,7 @@ void out_index(struct Index*, size_t);
 void out_return(struct Return*, size_t);
 void out_void(size_t);
 void out_boolean(struct Boolean*, size_t);
+void out_while(struct While*, size_t);
+void out_foreach(struct Foreach*, size_t);
 
 #endif

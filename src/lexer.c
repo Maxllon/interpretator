@@ -64,7 +64,7 @@ const wchar* BIN_OP = L"+-=*/^>!<\%";
 const wchar* BIN_OPS[] = {L"и", L"або"};
 
 const wchar* DIGITS = L"0123456789.";
-const wchar* SPEC = L";,()[]\"";
+const wchar* SPEC = L";,()[]:\"";
 
 tk_node* lexing(wchar* file)
 {
@@ -200,7 +200,7 @@ tk_node* lexing(wchar* file)
                     temp++;
                 }
             }
-            if(!temp)
+            /*if(!temp)
             {
             for(size_t i = 0; i < sizeof(STDFUNC)/sizeof(wchar*); ++i)
             {
@@ -211,7 +211,7 @@ tk_node* lexing(wchar* file)
                 }
                 
             }
-            }
+            }*/
             if(!temp)
             {
             for(size_t i = 0; i < sizeof(BIN_OPS)/sizeof(wchar*); ++i)
