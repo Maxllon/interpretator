@@ -19,7 +19,9 @@ typedef enum
     ASSIGN_EXPR,
     BINARY_EXPR,
     ARRAY_EXPR,
-    INDEX_EXPR
+    INDEX_EXPR,
+    RETURN_EXPR,
+    VOID_EXPR
 
 }expr_kind;
 
@@ -37,6 +39,7 @@ struct Assign;
 struct Array;
 struct Binary;
 struct Index;
+struct Return;
 
 //expretion vector
 typedef struct
@@ -65,6 +68,7 @@ struct Expretion
         struct Array *array;
         struct Binary *binary;
         struct Index* index;
+        struct Return* return_t;
     };
 };
 struct Seque
@@ -128,6 +132,7 @@ struct Array
 
 struct Index
 {
+    struct Expretion* destination;
     struct Expretion* index;
 };
 
@@ -137,6 +142,11 @@ struct Binary
     struct Expretion *left;
 
     wchar *op;
+};
+
+struct Return
+{
+    struct Expretion* value;
 };
 
 //create expr functions
@@ -153,6 +163,7 @@ struct Assign* create_empty_assign(void);
 struct Array* create_empty_array(void);
 struct Binary* create_empty_binary(void);
 struct Index* create_empty_index(void);
+struct Return* create_empty_return(void);
 
 
 //delete expretion functions
@@ -169,6 +180,7 @@ void delete_assign(struct Assign*);
 void delete_array(struct Array*);
 void delete_binary(struct Binary*);
 void delete_index(struct Index*);
+void delete_return(struct Return*);
 
 
 typedef struct 
@@ -184,10 +196,12 @@ struct Expretion* parce(tk_node* main);
 struct Expretion* parce_expr(void);
 struct Expretion* parce_atom(void);
 struct Expretion* mb_binary(struct Expretion*, size_t);
+struct Expretion* mb_index(struct Expretion*);
 struct Expretion* parce_if(void);
 struct Expretion* parce_seque(void);
 struct Expretion* parce_func(void);
 struct Expretion* parce_call(void);
+struct Expretion* parce_return(void);
 
 //output functions
 void out_expretion(struct Expretion*, size_t);
@@ -200,5 +214,9 @@ void out_if(struct IF*, size_t);
 void out_seque(struct Seque*, size_t);
 void out_func(struct Func*, size_t);
 void out_call(struct Call*, size_t);
+void out_index(struct Index*, size_t);
+void out_return(struct Return*, size_t);
+void out_void(size_t);
+void out_boolean(struct Boolean*, size_t);
 
 #endif

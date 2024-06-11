@@ -42,6 +42,11 @@ struct Expretion *create_empty_expr(expr_kind kind)
     case INDEX_EXPR:
         expr->index = create_empty_index();
         break;
+    case VOID_EXPR:
+        break;
+    case RETURN_EXPR:
+        expr->return_t = create_empty_return();
+        break;
     default:
         printf("Error: uncorrectly expretion kind!\n");
         exit(1);
@@ -145,7 +150,15 @@ struct Index* create_empty_index(void)
 {
     struct Index* index = malloc(sizeof(struct Index));
     index->index = NULL;
+    index->destination = NULL;
     return index;
+}
+
+struct Return* create_empty_return(void)
+{
+    struct Return* return_t = malloc(sizeof(struct Return));
+    return_t->value = NULL;
+    return return_t;
 }
 
 void delete_expr(struct Expretion *expr)
@@ -187,6 +200,13 @@ void delete_expr(struct Expretion *expr)
     case ARRAY_EXPR:
         delete_array(expr->array);
         break;
+    case INDEX_EXPR:
+        delete_index(expr->index);
+        break;
+    case VOID_EXPR:
+        break;
+    case RETURN_EXPR:
+        delete_return(expr->return_t);
     default:
         printf("Error: uncorrectly expretion kind!\n");
         exit(1);
@@ -277,7 +297,14 @@ void delete_binary(struct Binary *bin)
 void delete_index(struct Index* index)
 {
     delete_expr(index->index);
+    delete_expr(index->destination);
     bm_free(index);
+}
+
+void delete_return(struct Return* return_t)
+{
+    delete_expr(return_t->value);
+    bm_free(return_t);
 }
 
 struct Expretion *at(expretion_Vector* expretions, size_t index)
@@ -338,7 +365,7 @@ struct Expretion *parce(tk_node *main)
 
 struct Expretion *parce_expr(void)
 {
-    return mb_binary(parce_atom(), 0);
+    return mb_binary(mb_index(parce_atom()), 0);
 }
 
 struct Expretion* parce_atom(void)
@@ -358,6 +385,19 @@ struct Expretion* parce_atom(void)
             if(wcscmp(tk_list->value, L"коли") == 0) return parce_if();
             if(wcscmp(tk_list->value, L"нч") == 0) return parce_seque();
             if(wcscmp(tk_list->value, L"служ") == 0) return parce_func();
+            if(wcscmp(tk_list->value, L"НЕЧА") == 0)
+            {
+                tk_list = tk_list->next;
+                return create_empty_expr(VOID_EXPR);
+            }
+            if(wcscmp(tk_list->value, L"обрати") == 0) return parce_return();
+            if(wcscmp(tk_list->value, L"БЛЯДЬ") == 0 || wcscmp(tk_list->value, L"БЫЛЬ") == 0)
+            {
+                expr = create_empty_expr(BOOLEAN_EXPR);
+                expr->boolean->value = malloc(wcslen(tk_list->value)*2+2);
+                wcscpy(expr->boolean->value, tk_list->value);
+                break;
+            }
             break;
         case NUMBER:
             expr = create_empty_expr(NUMBER_EXPR);
@@ -428,7 +468,7 @@ struct Expretion* mb_binary(struct Expretion* left, size_t priority)
         if(his_prior > priority)
         {
             tk_list = tk_list->next;
-            struct Expretion* right = mb_binary(parce_atom(), his_prior);
+            struct Expretion* right = mb_binary(mb_index(parce_atom()), his_prior);
             struct Expretion* expr = create_empty_expr(BINARY_EXPR);
             expr->binary->left = left;
             expr->binary->right = right;
@@ -468,9 +508,38 @@ void out_expretion(struct Expretion* expr, size_t indent)
         case CALL_EXPR:
             out_call(expr->call, indent);
             break;
+        case INDEX_EXPR:
+            out_index(expr->index, indent);
+            break;
+        case VOID_EXPR:
+            out_void(indent);
+            break;
+        case RETURN_EXPR:
+            out_return(expr->return_t, indent);
+            break;
+        case BOOLEAN_EXPR:
+            out_boolean(expr->boolean, indent);
+            break;
         default:
+            printf("Error: uncorrectly expretion kind!\n");
+            exit(1);
             break;
     }
+}
+
+struct Expretion* mb_index(struct Expretion* expr)
+{
+    if(wcscmp(tk_list->value, L"[") == 0)
+    {
+        tk_list = tk_list->next;
+
+        struct Expretion* index = create_empty_expr(INDEX_EXPR);
+        index->index->destination = expr;
+        index->index->index = parce_expr();
+        skip(L"]");
+        return mb_index(index);
+    }
+    return expr;
 }
 
 struct Expretion* parce_if(void)
@@ -538,6 +607,14 @@ struct Expretion* parce_call(void)
         if(wcscmp(tk_list->value, L")") != 0) skip(L",");
     }
     skip(L")");
+    return expr;
+}
+
+struct Expretion* parce_return(void)
+{
+    tk_list = tk_list->next;
+    struct Expretion* expr = create_empty_expr(RETURN_EXPR);
+    expr->return_t->value = parce_expr();
     return expr;
 }
 
@@ -610,6 +687,30 @@ void out_call(struct Call* call, size_t indent)
         out_expretion(at(&call->arguments, i), indent+INDENT);
     }
     wprintf(L"%ls)\n", str);
+
+    free(str);
+}
+
+void out_index(struct Index* index, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: доступ к элементу\n", str);
+
+    wprintf(L"%lsОткуда:\n", str);
+    wprintf(L"%ls{:\n", str);
+    out_expretion(index->destination, indent+INDENT);
+    wprintf(L"%ls{:\n", str);
+
+    wprintf(L"%lsИндекс:\n", str);
+    wprintf(L"%ls{:\n", str);
+    out_expretion(index->index, indent+INDENT);
+    wprintf(L"%ls{:\n", str);
 
     free(str);
 }
@@ -711,4 +812,48 @@ void out_if(struct IF* If, size_t indent)
     wprintf(L"%ls}\n", str);
     }
 
+}
+void out_return(struct Return* return_t, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: возвращение\n", str);
+    wprintf(L"%lsВозвращаемое значение:\n", str);
+    wprintf(L"%ls{\n", str);
+    out_expretion(return_t->value, indent+INDENT);
+    wprintf(L"%ls}\n", str);
+
+    free(str);
+}
+void out_void(size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: пустота\n", str);
+
+    free(str);  
+}
+void out_boolean(struct Boolean* boolean, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: логический\n", str);
+    wprintf(L"%lsЗначение: %ls\n", str, boolean->value);
+
+    free(str); 
 }
