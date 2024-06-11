@@ -176,6 +176,8 @@ struct Expretion* parce_atom(void);
 struct Expretion* mb_binary(struct Expretion*, size_t);
 struct Expretion* parce_if(void);
 struct Expretion* parce_seque(void);
+struct Expretion* parce_func(void);
+struct Expretion* parce_call(void);
 
 //output functions
 void out_expretion(struct Expretion*, size_t);
@@ -186,6 +188,7 @@ void out_variable(struct Variable*, size_t);
 void out_string(struct String*, size_t);
 void out_if(struct IF*, size_t);
 void out_seque(struct Seque*, size_t);
-
+void out_func(struct Func*, size_t);
+void out_call(struct Call*, size_t);
 
 #endif

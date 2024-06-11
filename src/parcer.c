@@ -341,6 +341,7 @@ struct Expretion* parce_atom(void)
         case KEYWORD:
             if(wcscmp(tk_list->value, L"коли") == 0) return parce_if();
             if(wcscmp(tk_list->value, L"нч") == 0) return parce_seque();
+            if(wcscmp(tk_list->value, L"служ") == 0) return parce_func();
             break;
         case NUMBER:
             expr = create_empty_expr(NUMBER_EXPR);
@@ -353,6 +354,7 @@ struct Expretion* parce_atom(void)
             wcscpy(expr->string->value, tk_list->value);
             break;
         case VARIABLE:
+            if(wcscmp(tk_list->next->value, L"(") == 0) return parce_call();
             expr = create_empty_expr(VARIABLE_EXPR);
             expr->variable->name = malloc(wcslen(tk_list->value)*2+2);
             wcscpy(expr->variable->name, tk_list->value);
@@ -426,6 +428,9 @@ void out_expretion(struct Expretion* expr, size_t indent)
 {
     switch(expr->kind)
     {
+        case FUNC_EXPR:
+            out_func(expr->func, indent);
+            break;
         case SEQUE_EXPR:
             out_seque(expr->seque, indent);
             break;
@@ -443,6 +448,9 @@ void out_expretion(struct Expretion* expr, size_t indent)
             break;
         case STRING_EXPR:
             out_string(expr->string, indent);
+            break;
+        case CALL_EXPR:
+            out_call(expr->call, indent);
             break;
         default:
             break;
@@ -469,7 +477,7 @@ struct Expretion* parce_if(void)
 struct Expretion* parce_seque(void)
 {
     tk_list = tk_list->next;
-    struct Expretion *expr = create_empty_expr(SEQUE_EXPR);
+    struct Expretion* expr = create_empty_expr(SEQUE_EXPR);
 
     while (wcscmp(tk_list->value, L"кц") != 0)
     {
@@ -477,6 +485,43 @@ struct Expretion* parce_seque(void)
         skip(L";");
     }
     tk_list = tk_list->next;
+    return expr;
+}
+
+struct Expretion* parce_func(void)
+{
+    tk_list = tk_list->next;
+    struct Expretion* expr = create_empty_expr(FUNC_EXPR);
+
+    expr->func->name = malloc(wcslen(tk_list->value)*2+2);
+    wcscpy(expr->func->name, tk_list->value);
+    skip(expr->func->name);
+
+    skip(L"(");
+    while(wcscmp(tk_list->value, L")") != 0)
+    {
+        push_back(&expr->func->arguments, parce_expr());
+        if(wcscmp(tk_list->value, L")") != 0) skip(L",");
+    }
+    skip(L")");
+    expr->func->body = parce_expr();
+    return expr;
+}
+
+struct Expretion* parce_call(void)
+{
+    struct Expretion* expr = create_empty_expr(CALL_EXPR);
+    expr->call->name = malloc(wcslen(tk_list->value)*2+2);
+    wcscpy(expr->call->name, tk_list->value);
+
+    tk_list = tk_list->next;
+    skip(L"(");
+    while(wcscmp(tk_list->value, L")") != 0)
+    {
+        push_back(&expr->call->arguments, parce_expr());
+        if(wcscmp(tk_list->value, L")") != 0) skip(L",");
+    }
+    skip(L")");
     return expr;
 }
 
@@ -490,14 +535,66 @@ void out_seque(struct Seque* seque, size_t indent)
     *(str+indent) = L'\0';
 
     wprintf(L"%lsТип: последовательность\n", str);
+
     wprintf(L"%lsТело:\n", str);
     wprintf(L"%ls{\n", str);
     for(size_t i = 0; i < seque->expretions.len; ++i)
     {
         out_expretion(at(&seque->expretions, i), indent+INDENT);
     }
-
     wprintf(L"%ls}\n", str);
+
+    free(str);
+}
+
+void out_func(struct Func* func, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: функция\n", str);
+    wprintf(L"%lsИмя: %ls\n", str, func->name);
+
+    wprintf(L"%lsАргументы:\n", str);
+    wprintf(L"%ls(\n", str);
+    for(size_t i = 0; i < func->arguments.len; ++i)
+    {
+        out_expretion(at(&func->arguments, i), indent+INDENT);
+    }
+    wprintf(L"%ls)\n", str);
+
+    wprintf(L"%lsТело:\n", str);
+    wprintf(L"%ls{\n", str);
+    out_expretion(func->body, indent+INDENT);
+    wprintf(L"%ls}\n", str);
+
+    free(str);
+}
+
+void out_call(struct Call* call, size_t indent)
+{
+    wchar* str = malloc(2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: вызов функции\n", str);
+    wprintf(L"%lsИмя: %ls\n", str, call->name);
+
+    wprintf(L"%lsАргументы:\n", str);
+    wprintf(L"%ls(\n", str);
+    for(size_t i = 0; i < call->arguments.len; ++i)
+    {
+        out_expretion(at(&call->arguments, i), indent+INDENT);
+    }
+    wprintf(L"%ls)\n", str);
+
     free(str);
 }
 

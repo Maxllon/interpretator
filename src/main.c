@@ -15,7 +15,6 @@ int main(int argc, char *argv[])
     tk_node* main = lexing(file);
 
     struct Expretion* expr = parce(main);
-    system("pause");
     
     delete_tk_list(main);
     bm_free(file);
