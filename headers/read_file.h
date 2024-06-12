@@ -3,74 +3,40 @@
 
 #include "includes.h"
 
-static const wchar ru_list208[] = L"Ё              АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЫЮЯабвгдежзийклмноп";
-static const wchar ru_list209[] = L"рстуфхцчшщъыьэюя ё";
-
-static char *cat(char *left, const char *right)
+static Errno fsize(FILE* file, size_t* size)
 {
-    char *temp = (char *)malloc(strlen(left) + strlen(right) + 1);
-    for (u8 i = 0; i < strlen(left); i++)
-    {
-        *(temp + i) = *(left + i);
-    }
-    for (u8 i = 0; i < strlen(right); i++)
-    {
-        *(temp + i + strlen(left)) = *(right + i);
-    }
-    return temp;
-}
-static long fsize(FILE *file)
-{
-    fseek(file, 0, SEEK_END);
-    long size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    return size;
+    long saved = ftell(file);
+    if (saved < 0) return errno;
+    if (fseek(file, 0, SEEK_END) < 0) return errno;
+    long result = ftell(file);
+    if (result < 0) return errno;
+    if (fseek(file, saved, SEEK_SET) < 0) return errno;
+    *size = (size_t) result;
+    return 0;
 }
 
-wchar *read_file(char *filename)
+Errno read_file(char* filename, wchar** buffer)
 {
-    FILE *file;
-    char *f_filename = cat(filename, expan);
-    file = fopen(f_filename, "r");
-    if (file == NULL)
-    {
-        printf("Error: cannot open the file: %s", f_filename);
-        exit(-1);
-    }
+    FILE* input;
+    size_t size;
 
-    long file_size = fsize(file);
-    wchar *text = (wchar *)malloc(2 * file_size + 2);
+    char* full_file_name = malloc(strlen(filename) + strlen(EXPAN) + 1);
+    strcpy(full_file_name, filename);
+    strcat(full_file_name, EXPAN);
 
-    char *content = (char *)malloc(file_size + 1);
-    content[file_size] = '\0';
+    if ((input = fopen(full_file_name,"r")) == NULL)
+         return errno;
+    fsize(input, &size);
 
-    fread(content, 1, file_size, file);
-    fclose(file);
+    *buffer = malloc(sizeof(wchar)*size);
 
-    wchar *tx = text;
-    wchar s;
-    for (int i = 0; i < file_size; i++)
-    {
-        if ((u8)content[i] == 208)
-        {
-            *tx = ru_list208[(u8)content[i + 1] - 129];
-            i++;
-        }
-        else if ((u8)content[i] == 209)
-        {
-            *tx = ru_list209[(u8)content[i + 1] - 128];
-            i++;
-        }
-        else
-        {
-            mbtowc(&s, &content[i], 1);
-            *tx = s;
-        }
-        tx++;
-    }
-    *tx = L'\0';
-    bm_free(content);
-    return text;
+    if(fgetws(*buffer, size+1, input) == NULL) return errno;
+
+    fclose(input);
+
+    free(full_file_name);
+
+    return 0;
 }
 
 #endif

@@ -8,10 +8,11 @@
 #include<stdio.h>
 #include<string.h>
 #include<locale.h>
+#include<errno.h>
 
 //constants
 #define wchar wchar_t
-#define expan ".txt"
+#define EXPAN ".txt"
 #define INDENT 4
 typedef int Errno;
 

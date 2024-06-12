@@ -8,8 +8,10 @@
 
 int main(int argc, char *argv[])
 {
-    setlocale(LC_ALL, "");
-    wchar* file = read_file("example");
+    setlocale(LC_CTYPE,".UTF8");
+    char* filename = "example";
+    wchar* file;
+    read_file(filename, &file);
     if(out_file) wprintf(L"%ls\n\n\n\n",file);
 
     tk_node* main = lexing(file);
