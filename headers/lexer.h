@@ -13,27 +13,29 @@ typedef enum
 {
     END = 0,
     START,
+    
     KEYWORD,
     VARIABLE,
     STRING,
     BINARY,
+    NUMBER,
+
     SPECIAL,
     DIGIT,
-    PLAIN,
     SYMBOL,
-    NUMBER,
-    STD
-} TOKEN_KIND;
+    BIN
+}TOKEN_KIND;
 
-typedef struct tk_node_t
+typedef struct tk_node tk_node;
+struct tk_node
 {
     TOKEN_KIND kind;
     wchar *value;
     VEC_2 pos;
 
-    struct tk_node_t *next;
-    struct tk_node_t *previous;
-} tk_node;
+    tk_node *next;
+    tk_node *previous;
+};
 
 void push_node(tk_node *main, tk_node *node);
 tk_node *new_node(TOKEN_KIND kind, wchar *value, VEC_2 pos);

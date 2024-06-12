@@ -34,22 +34,24 @@ tk_node* go_start(tk_node* main)
     while(main->previous != NULL) main = main->previous;
     return main;
 }
-const char* name_tokens[] = {"END", "START", "KEYWORD", "VARIABLE", "STRING", "BINARY", "SPECIAL", "DIGIT", "PLAIN", "SYMBOL", "NUMBER", "STD"};
+static wchar* TOKEN_NAMES[sizeof(TOKEN_KIND)];
+
 void out_tk_list(tk_node *main)
 {
-    while(1)
+    size_t i = 1;
+    for (tk_node* token = main; token->kind != END; token = token->next)
     {
-        printf("kind: %s ", name_tokens[main->kind]);
-        wprintf(L"value: %ls ", main->value);
-        printf("pos: %d %d\n", main->pos.x, main->pos.y);
-        if(main->kind == END) break;
-        main = main->next;
+        wprintf(L"<%d>", i);
+        wprintf(L"Тип токена: %s\n", TOKEN_NAMES[token->kind]);
+        wprintf(L"Значение токена: %ls\n", token->value);
+        wprintf(L"Позиция токена: %d %d\n\n", token->pos.x, token->pos.y);  
+        ++i;
     }
     printf("\n\n\n");
 }
-int count(wchar* str, wchar symb)
+static size_t count(wchar* str, wchar symb)
 {
-    int c = 0;
+    size_t c = 0;
     while((str = wcschr(str, symb)) != NULL)
     {
         c++;
@@ -59,15 +61,28 @@ int count(wchar* str, wchar symb)
 }
 
 const wchar* KEYWORDS[] = {L"коли", L"доселе", L"инако", L"обрати", L"не", L"бери", L"из", L"служ", L"нч", L"кц", L"БЫЛЬ", L"БЛЯДЬ", L"то", L"НЕЧА"};
-const wchar* STDFUNC[] = {L"покажи", L"взимать", L"межа"};
-const wchar* BIN_OP = L"+-=*/^>!<\%";
 const wchar* BIN_OPS[] = {L"и", L"або"};
 
+const wchar* BIN_OP = L"+-=*/^>!<\%";
 const wchar* DIGITS = L"0123456789.";
 const wchar* SPEC = L";,()[]{}:\"";
 
 tk_node* lexing(wchar* file)
 {
+    TOKEN_NAMES[END] = L"КОНЕЦ";
+    TOKEN_NAMES[START] = L"НАЧАЛО";
+    TOKEN_NAMES[KEYWORD] = L"СЛОВО-КЛЮЧ";
+    TOKEN_NAMES[VARIABLE] = L"ПЕРЕМЕННАЯ";
+    TOKEN_NAMES[STRING] = L"СТРОКА";
+    TOKEN_NAMES[BINARY] = L"ОПЕРАТОР";
+    TOKEN_NAMES[NUMBER] = L"ЧИСЛО";
+
+    TOKEN_NAMES[SYMBOL] = L"СИМВОЛ";
+    TOKEN_NAMES[SPECIAL] = L"ЗНАК";
+    TOKEN_NAMES[DIGIT] = L"ЦИФРА";
+    TOKEN_NAMES[BIN] = L"ОПЕРАТОР";
+
+
     //--------------------------lexing symbols-------------------------
     VEC_2 pos = {-1,-1};
     tk_node* symbols = new_node(START, NULL,pos);
@@ -139,7 +154,9 @@ tk_node* lexing(wchar* file)
                 delete_tk_list(symbols);
                 bm_free(file);
                 bm_free(str);
-                error("this number cant start with zero",pos);
+                wprintf(L"Ошибка: Это число не может начинаться с нуля!! <%d><%d>\n", pos.x, pos.y);
+                system("pause");
+                exit(1);
             }
             if(count(str, L'.') > 1)
             {
@@ -147,7 +164,9 @@ tk_node* lexing(wchar* file)
                 delete_tk_list(symbols);
                 bm_free(file);
                 bm_free(str);
-                error("this number has more than 1 dot", pos);
+                wprintf(L"Ошибка: В числе не может быть две точки!! <%d><%d>\n", pos.x, pos.y);
+                system("pause");
+                exit(1);
             }
             
             push_node(main, new_node(NUMBER, str, pos));
@@ -163,7 +182,9 @@ tk_node* lexing(wchar* file)
                     delete_tk_list(main);
                     delete_tk_list(symbols);
                     bm_free(str);
-                    error("there is no end for the string", pos);
+                    wprintf(L"Ошибка: строка не имеет конца!! <%d><%d>\n", pos.x, pos.y);
+                    system("pause");
+                    exit(1);
                 }
                 while(*((symbols = symbols->next)->value) != L'\"')
                 {
@@ -172,7 +193,9 @@ tk_node* lexing(wchar* file)
                         delete_tk_list(main);
                         delete_tk_list(symbols);
                         bm_free(str);
-                        error("there is no end of the string", pos);
+                        wprintf(L"Ошибка: строка не имеет конца!! <%d><%d>\n", pos.x, pos.y);
+                        system("pause");
+                        exit(1);
                     }
                     bm_wcscat(str, symbols->value);
                 }
@@ -200,18 +223,6 @@ tk_node* lexing(wchar* file)
                     temp++;
                 }
             }
-            /*if(!temp)
-            {
-            for(size_t i = 0; i < sizeof(STDFUNC)/sizeof(wchar*); ++i)
-            {
-                if(wcscmp(str, STDFUNC[i]) == 0)
-                {
-                    push_node(main, new_node(STD, str, pos));
-                    temp++;
-                }
-                
-            }
-            }*/
             if(!temp)
             {
             for(size_t i = 0; i < sizeof(BIN_OPS)/sizeof(wchar*); ++i)
