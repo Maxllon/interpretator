@@ -3,11 +3,13 @@
 
 #include"includes.h"
 #include"parcer.h"
+#include"bm_vector.h"
 
 typedef struct Environment Environment;
 typedef struct Function Function;
 typedef struct Data Data;
 typedef struct bm_vector bm_vector;
+typedef struct Exprtion Expretion;
 
 typedef enum
 {
@@ -28,7 +30,7 @@ struct Function
 {
     wchar* name;
     expretion_Vector arguments;
-    expretion_Vector body;
+    Environment* envi;
 };
 
 struct Data
@@ -37,16 +39,15 @@ struct Data
     DATA_TYPES type;
 };
 
-//bm_vector
-struct bm_vector
-{
-    void** array;
-    size_t size;
-    size_t len;
-    size_t element_size;
-};
-bm_vector* create_bm_vec(size_t);
-void delete_bm_vec(bm_vector*);
-Errno bm_vector_push(bm_vector*, void* el);
-void bm_vector_resize(bm_vector*);
+//interpretator
+Data* inter_expr(Environment*, Expretion*);
+
+
+//data
+Data* inter_num(Environment*, Expretion*);
+Data* inter_str(Environment*, Expretion*);
+Data* inter_list(Environment*, Expretion*);
+Data* inter_bool(Environment*, Expretion*);
+
+
 #endif
