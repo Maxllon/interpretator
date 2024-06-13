@@ -29,7 +29,7 @@ struct Environment
 struct Function
 {
     wchar* name;
-    expretion_Vector arguments;
+    bm_vector* arguments;
     Environment* envi;
 };
 
@@ -41,7 +41,6 @@ struct Data
 
 //interpretator
 Data* inter_expr(Environment*, Expretion*);
-
 
 //data
 Data* inter_num(Environment*, Expretion*);

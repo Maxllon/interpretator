@@ -3,6 +3,7 @@
 
 #include"includes.h"
 #include"lexer.h"
+#include"bm_vector.h"
 
 typedef enum
 {
@@ -46,16 +47,6 @@ struct Return;
 struct While;
 struct Foreach;
 
-//expretion vector
-typedef struct
-{   
-    struct Expretion** expr;
-    size_t size;
-    size_t len;
-}expretion_Vector;
-struct Expretion* at(expretion_Vector*, size_t);
-void push_back(expretion_Vector*, struct Expretion*);
-
 struct Expretion
 {
     expr_kind kind;
@@ -80,14 +71,14 @@ struct Expretion
 };
 struct Seque
 {
-    expretion_Vector expretions;
+    bm_vector* expretions;
 };
 
 struct Func
 {
     wchar *name;
 
-    expretion_Vector arguments;
+    bm_vector* arguments;
 
     struct Expretion *body;
 };
@@ -96,7 +87,7 @@ struct Call
 {
     wchar *name;
 
-    expretion_Vector arguments;
+    bm_vector* arguments;
 };
 
 struct IF
@@ -134,7 +125,7 @@ struct Assign
 
 struct Array
 {
-    expretion_Vector expretions;
+    bm_vector* expretions;
 };
 
 struct Index

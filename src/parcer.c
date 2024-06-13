@@ -67,9 +67,7 @@ struct Seque *create_empty_seque(void)
 {
     struct Seque *seque = malloc(sizeof(struct Seque));
 
-    seque->expretions.len = 0;
-    seque->expretions.size = 100;
-    seque->expretions.expr = calloc(100, sizeof(struct Expretion *));
+    seque->expretions = bm_vector_create();
 
     return seque;
 }
@@ -79,9 +77,7 @@ struct Func *create_empty_func(void)
     func->name = NULL;
     func->body = NULL;
 
-    func->arguments.len = 0;
-    func->arguments.size = 100;
-    func->arguments.expr = calloc(100, sizeof(struct Expretion *));
+    func->arguments = bm_vector_create();
 
     return func;
 }
@@ -90,9 +86,7 @@ struct Call *create_empty_call(void)
     struct Call *call = malloc(sizeof(struct Call));
     call->name = NULL;
 
-    call->arguments.len = 0;
-    call->arguments.size = 100;
-    call->arguments.expr = calloc(100, sizeof(struct Expretion *));
+    call->arguments = bm_vector_create();
 
     return call;
 }
@@ -139,9 +133,7 @@ struct Array *create_empty_array(void)
 {
     struct Array *array = malloc(sizeof(struct Array));
 
-    array->expretions.len = 0;
-    array->expretions.size = 100;
-    array->expretions.expr = calloc(100, sizeof(struct Expretion *));
+    array->expretions = bm_vector_create();
 
     return array;
 }
@@ -249,32 +241,32 @@ void delete_expr(struct Expretion *expr)
 }
 void delete_seque(struct Seque *seque)
 {
-    for (size_t i = 0; i < seque->expretions.len; ++i)
+    for (size_t i = 0; i < seque->expretions->len; ++i)
     {
-        delete_expr(*(seque->expretions.expr + i));
+        delete_expr(bm_vector_at(seque->expretions, i));
     }
-    bm_free(seque->expretions.expr);
+    bm_vector_free(seque->expretions);
     bm_free(seque);
 }
 void delete_func(struct Func *func)
 {
-    for (size_t i = 0; i < func->arguments.len; ++i)
+    for (size_t i = 0; i < func->arguments->len; ++i)
     {
-        delete_expr(*(func->arguments.expr + i));
+        delete_expr(bm_vector_at(func->arguments, i));
     }
     bm_free(func->name);
     delete_expr(func->body);
-    bm_free(func->arguments.expr);
+    bm_vector_free(func->arguments);
     bm_free(func);
 }
 void delete_call(struct Call *call)
 {
-    for (size_t i = 0; i < call->arguments.len; ++i)
+    for (size_t i = 0; i < call->arguments->len; ++i)
     {
-        delete_expr(*(call->arguments.expr + i));
+        delete_expr(bm_vector_at(call->arguments, i));
     }
     bm_free(call->name);
-    bm_free(call->arguments.expr);
+    bm_vector_free(call->arguments);
     bm_free(call);
 }
 void delete_if(struct IF *If)
@@ -312,11 +304,11 @@ void delete_assign(struct Assign *assign)
 }
 void delete_array(struct Array *array)
 {
-    for (size_t i = 0; i < array->expretions.len; ++i)
+    for (size_t i = 0; i < array->expretions->len; ++i)
     {
-        delete_expr(*(array->expretions.expr + i));
+        delete_expr(bm_vector_at(array->expretions,i));
     }
-    bm_free(array->expretions.expr);
+    bm_vector_free(array->expretions);
     bm_free(array);
 }
 void delete_binary(struct Binary *bin)
@@ -355,27 +347,6 @@ void delete_foreach(struct Foreach* foreach)
     bm_free(foreach);
 }
 
-struct Expretion *at(expretion_Vector* expretions, size_t index)
-{
-    if (index > expretions->len)
-    {
-        printf("Error: index is out of range!\n");
-        system("pause");
-        exit(1);
-    }
-    return *(expretions->expr + index);
-}
-
-void push_back(expretion_Vector* expretions, struct Expretion* expr)
-{
-    expretions->len++;
-    if(expretions->size < expretions->len)
-    {
-        expretions->expr = realloc(expretions->expr, expretions->size + 100);
-    }
-    *(expretions->expr + expretions->len - 1) = expr;
-}
-
 int skip(wchar *str)
 {
     if(tk_list->kind == END)
@@ -403,7 +374,7 @@ struct Expretion *parce(tk_node *main)
     struct Expretion *expr = create_empty_expr(SEQUE_EXPR);
     while (tk_list->kind != END)
     {
-        push_back(&expr->seque->expretions, parce_expr());
+        bm_vector_push(expr->seque->expretions, parce_expr());
         skip(L";");
     }
     if(out_tree) out_expretion(expr, 0);
@@ -629,7 +600,7 @@ struct Expretion* parce_seque(void)
 
     while (wcscmp(tk_list->value, L"кц") != 0)
     {
-        push_back(&expr->seque->expretions, parce_expr());
+        bm_vector_push(expr->seque->expretions, parce_expr());
         skip(L";");
     }
     tk_list = tk_list->next;
@@ -648,7 +619,7 @@ struct Expretion* parce_func(void)
     skip(L"(");
     while(wcscmp(tk_list->value, L")") != 0)
     {
-        push_back(&expr->func->arguments, parce_expr());
+        bm_vector_push(expr->func->arguments, parce_expr());
         if(wcscmp(tk_list->value, L")") != 0) skip(L",");
     }
     skip(L")");
@@ -667,7 +638,7 @@ struct Expretion* parce_call(void)
     skip(L"(");
     while(wcscmp(tk_list->value, L")") != 0)
     {
-        push_back(&expr->call->arguments, parce_expr());
+        bm_vector_push(expr->call->arguments, parce_expr());
         if(wcscmp(tk_list->value, L")") != 0) skip(L",");
     }
     skip(L")");
@@ -714,7 +685,7 @@ struct Expretion* parce_array(void)
 
     while(wcscmp(tk_list->value, L"}") != 0)
     {
-        push_back(&expr->array->expretions, parce_expr());
+        bm_vector_push(expr->array->expretions, parce_expr());
         if(wcscmp(tk_list->value, L"}") != 0) skip(L",");
     }
     skip(L"}");
@@ -734,14 +705,14 @@ void out_seque(struct Seque* seque, size_t indent)
 
     wprintf(L"%lsТело:\n", str);
     wprintf(L"%ls{\n", str);
-    for(size_t i = 0; i < seque->expretions.len; ++i)
+    for(size_t i = 0; i < seque->expretions->len; ++i)
     {
         for(size_t j = 0; j < INDENT; ++j)
         {
             wprintf(L" ");
         }
         wprintf(L"%ls<%d>\n", str, i+1);
-        out_expretion(at(&seque->expretions, i), indent+INDENT);
+        out_expretion(bm_vector_at(seque->expretions, i), indent+INDENT);
     }
     wprintf(L"%ls}\n", str);
 
@@ -762,14 +733,14 @@ void out_func(struct Func* func, size_t indent)
 
     wprintf(L"%lsАргументы:\n", str);
     wprintf(L"%ls(\n", str);
-    for(size_t i = 0; i < func->arguments.len; ++i)
+    for(size_t i = 0; i < func->arguments->len; ++i)
     {
         for(size_t j = 0; j < INDENT; ++j)
         {
             wprintf(L" ");
         }
         wprintf(L"%ls<%d>\n", str, i+1);
-        out_expretion(at(&func->arguments, i), indent+INDENT);
+        out_expretion(bm_vector_at(func->arguments, i), indent+INDENT);
     }
     wprintf(L"%ls)\n", str);
 
@@ -795,14 +766,14 @@ void out_call(struct Call* call, size_t indent)
 
     wprintf(L"%lsАргументы:\n", str);
     wprintf(L"%ls(\n", str);
-    for(size_t i = 0; i < call->arguments.len; ++i)
+    for(size_t i = 0; i < call->arguments->len; ++i)
     {
         for(size_t j = 0; j < INDENT; ++j)
         {
             wprintf(L" ");
         }
         wprintf(L"%ls<%d>\n", str, i+1);
-        out_expretion(at(&call->arguments, i), indent+INDENT);
+        out_expretion(bm_vector_at(call->arguments, i), indent+INDENT);
     }
     wprintf(L"%ls)\n", str);
 
@@ -1037,14 +1008,14 @@ void out_array(struct Array* array, size_t indent)
 
     wprintf(L"%lsЭлементы:\n", str);
     wprintf(L"%ls[\n", str);
-    for(size_t i = 0; i < array->expretions.len; ++i)
+    for(size_t i = 0; i < array->expretions->len; ++i)
     {
         for(size_t j = 0; j < INDENT; ++j)
         {
             wprintf(L" ");
         }
         wprintf(L"%ls<%d>\n", str, i+1);
-        out_expretion(at(&array->expretions, i), indent+INDENT);
+        out_expretion(bm_vector_at(array->expretions, i), indent+INDENT);
     }
     wprintf(L"%ls]\n", str);
 
