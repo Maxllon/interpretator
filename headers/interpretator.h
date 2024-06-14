@@ -5,4 +5,6 @@
 #include"parcer.h"
 #include"bm_vector.h"
 
+typedef struct Object Object;
+
 #endif
