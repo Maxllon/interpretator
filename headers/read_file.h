@@ -29,8 +29,14 @@ Errno read_file(char* filename, wchar** buffer)
     fsize(input, &size);
 
     *buffer = malloc(sizeof(wchar)*size);
-
-    if(fgetws(*buffer, size+1, input) == NULL) return errno;
+    wchar sym;
+    size_t i = 0;
+    while((sym = fgetwc(input)) != WEOF)
+    {
+        *(*(buffer)+i) = sym;
+        ++i;
+    }
+    *(*(buffer)+i) = L'\0';
 
     fclose(input);
 
