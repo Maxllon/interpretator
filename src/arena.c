@@ -1,12 +1,12 @@
 #include"arena.h"
 
 
-Arena* arena_create(size_t size)
+Arena* arena_create()
 {
     Arena* ar = malloc(sizeof(Arena));
     ar->index = 0;
-    ar->size = size;
-    ar->region = malloc(size);
+    ar->size = ARENA_BLOCK_SIZE;
+    ar->region = malloc(ARENA_BLOCK_SIZE);
     return ar;
 }
 

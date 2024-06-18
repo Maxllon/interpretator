@@ -1,14 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include<stdio.h>
+#include<stdlib.h>
 
-#include "includes.h"
-#include "read_file.h"
-#include "lexer.h"
-#include "parcer.h"
+#include"includes.h"
+#include"read_file.h"
+#include"lexer.h"
+#include"parcer.h"
+#include"arena.h"
 
 int main(int argc, char *argv[])
 {
     setlocale(LC_CTYPE,".UTF8");
+    Arena* arena = arena_create();
+
     char* filename = "example";
     wchar* file;
     read_file(filename, &file);

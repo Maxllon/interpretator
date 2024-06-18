@@ -65,15 +65,5 @@ struct Func_Obj
 
 Environment* create_empty_environment(Environment*);
 
-Object* create_empty_object(OBJECT_KIND);
-Var_Obj* create_empty_var_obj(void);
-Func_Obj* create_empty_func_obj(void);
-
-void free_obj(Object*);
-void free_environment(Environment*);
-void free_var_obj(Var_Obj*);
-void free_func_obj(Func_Obj*);
-
-
 
 #endif
