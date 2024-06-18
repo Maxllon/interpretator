@@ -2,6 +2,7 @@
 #define BM_VECTOR_H
 
 #include"includes.h"
+#include"arena.h"
 
 #define BM_VECTOR_BLOCK 100
 
@@ -13,9 +14,8 @@ struct bm_vector
     size_t capacity;
 };
 
-bm_vector* bm_vector_create(void);
-Errno bm_vector_free(bm_vector*);
-void bm_vector_push(bm_vector*, void*);
+bm_vector* bm_vector_create(Arena*);
+void bm_vector_push(bm_vector*, void*, Arena*);
 void* bm_vector_at(bm_vector*, size_t);
 
 #endif
