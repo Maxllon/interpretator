@@ -1,7 +1,8 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include "includes.h"
+#include"includes.h"
+#include"arena.h"
 
 typedef struct
 {
@@ -37,13 +38,12 @@ struct tk_node
     tk_node *previous;
 };
 
-void push_node(tk_node *main, tk_node *node);
-tk_node *new_node(TOKEN_KIND kind, wchar *value, VEC_2 pos);
-void delete_tk_list(tk_node *main);
-tk_node *go_start(tk_node *main);
+void push_node(tk_node*, tk_node*);
+tk_node *new_node(TOKEN_KIND, wchar*, VEC_2);
+tk_node *go_start(tk_node*);
 
-void out_tk_list(tk_node *main);
+void out_tk_list(tk_node*);
 
-tk_node *lexing(wchar *file);
+tk_node *lexing(wchar*, Arena*);
 
 #endif

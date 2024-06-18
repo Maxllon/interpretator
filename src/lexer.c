@@ -1,21 +1,15 @@
 #include"lexer.h"
+static Arena* ARENA = NULL;
+
 tk_node* new_node(TOKEN_KIND kind, wchar* value, VEC_2 pos)
 {
-    tk_node* node = malloc(sizeof(tk_node));
+    tk_node* node = arena_alloc(ARENA, sizeof(tk_node));
     node->kind = kind;
     node->next = NULL;
     node->previous = NULL;
     node->pos = pos;
     node->value = value;
     return node;
-}
-
-void delete_tk_list(tk_node* main)
-{
-    if(main == NULL) return;
-    if(main->next != NULL) delete_tk_list(main->next);
-    bm_free(main->value);
-    bm_free(main);
 }
 
 void push_node(tk_node* main, tk_node* node)
@@ -67,8 +61,10 @@ const wchar* BIN_OP = L"+-=*/^>!<\%";
 const wchar* DIGITS = L"0123456789.";
 const wchar* SPEC = L";,()[]{}:\"";
 
-tk_node* lexing(wchar* file)
+tk_node* lexing(wchar* file, Arena* arena)
 {
+    ARENA = arena;
+    
     TOKEN_NAMES[END] = L"КОНЕЦ";
     TOKEN_NAMES[START] = L"НАЧАЛО";
     TOKEN_NAMES[KEYWORD] = L"СЛОВО-КЛЮЧ";
@@ -135,7 +131,7 @@ tk_node* lexing(wchar* file)
     while(symbols->kind != END)
     {
         temp = 0;
-        str = malloc(2);
+        str = arena_alloc(ARENA, 2);
         *str = L'\0';
         pos = symbols->pos;
         //lex number
