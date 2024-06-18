@@ -1,7 +1,8 @@
 #ifndef READ_FILE_H
 #define READ_FILE_H
 
-#include "includes.h"
+#include"includes.h"
+#include"arena.h"
 
 static Errno fsize(FILE* file, size_t* size)
 {
@@ -15,20 +16,23 @@ static Errno fsize(FILE* file, size_t* size)
     return 0;
 }
 
-Errno read_file(char* filename, wchar** buffer)
+Errno read_file(char* filename, wchar** buffer, Arena* ARENA)
 {
     FILE* input;
     size_t size;
 
-    char* full_file_name = malloc(strlen(filename) + strlen(EXPAN) + 1);
+    char* full_file_name = arena_alloc(ARENA, strlen(filename) + strlen(EXPAN) + 1);
     strcpy(full_file_name, filename);
     strcat(full_file_name, EXPAN);
 
     if ((input = fopen(full_file_name,"r")) == NULL)
-         return errno;
+    {
+         printf("Error: cant open this file: %s\n", full_file_name);
+         EXIT;
+    }
     fsize(input, &size);
 
-    *buffer = malloc(sizeof(wchar)*size);
+    *buffer = arena_alloc(ARENA, sizeof(wchar)*size);
     wchar sym;
     size_t i = 0;
     while((sym = fgetwc(input)) != WEOF)
@@ -39,9 +43,6 @@ Errno read_file(char* filename, wchar** buffer)
     *(*(buffer)+i) = L'\0';
 
     fclose(input);
-
-    free(full_file_name);
-
     return 0;
 }
 
