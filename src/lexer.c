@@ -146,23 +146,13 @@ tk_node* lexing(wchar* file, Arena* arena)
 
             if(*str == L'0' && *(str+1) != L'.' && *(str+1) != L'\0')
             {
-                delete_tk_list(main);
-                delete_tk_list(symbols);
-                bm_free(file);
-                bm_free(str);
                 wprintf(L"Ошибка: Это число не может начинаться с нуля!! <%d><%d>\n", pos.x, pos.y);
-                system("pause");
-                exit(1);
+                EXIT;
             }
             if(count(str, L'.') > 1)
             {
-                delete_tk_list(main);
-                delete_tk_list(symbols);
-                bm_free(file);
-                bm_free(str);
                 wprintf(L"Ошибка: В числе не может быть две точки!! <%d><%d>\n", pos.x, pos.y);
-                system("pause");
-                exit(1);
+                EXIT;
             }
             
             push_node(main, new_node(NUMBER, str, pos));
@@ -174,24 +164,16 @@ tk_node* lexing(wchar* file, Arena* arena)
             if(*(symbols->value) == L'\"')
             {
                 if(symbols->next->kind == END)
-                {
-                    delete_tk_list(main);
-                    delete_tk_list(symbols);
-                    bm_free(str);
+                {;
                     wprintf(L"Ошибка: строка не имеет конца!! <%d><%d>\n", pos.x, pos.y);
-                    system("pause");
-                    exit(1);
+                    EXIT;
                 }
                 while(*((symbols = symbols->next)->value) != L'\"')
                 {
                     if(symbols->next->kind == END)
                     {
-                        delete_tk_list(main);
-                        delete_tk_list(symbols);
-                        bm_free(str);
                         wprintf(L"Ошибка: строка не имеет конца!! <%d><%d>\n", pos.x, pos.y);
-                        system("pause");
-                        exit(1);
+                        EXIT;
                     }
                     bm_wcscat(str, symbols->value);
                 }
@@ -255,7 +237,6 @@ tk_node* lexing(wchar* file, Arena* arena)
     pos.y = -1;
     push_node(main, new_node(END, NULL, pos));
     symbols = go_start(symbols);
-    delete_tk_list(symbols);
     if(out_tklist) out_tk_list(main);
     return main;
 }
