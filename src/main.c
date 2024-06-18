@@ -19,9 +19,8 @@ int main(int argc, char *argv[])
 
     tk_node* main = lexing(file, ARENA);
 
-    struct Expretion* expr = parce(main);
+    struct Expretion* expr = parce(main, ARENA);
     
-    delete_expr(expr);
     arena_destroy(ARENA);
     system("pause");
     return 0;

@@ -4,6 +4,7 @@
 #include"includes.h"
 #include"lexer.h"
 #include"bm_vector.h"
+#include"arena.h"
 
 typedef enum
 {
@@ -179,25 +180,6 @@ struct While* create_empty_while(void);
 struct Foreach* create_empty_foreach(void);
 
 
-//delete expretion functions
-void delete_expr(struct Expretion*);
-void delete_seque(struct Seque*);
-void delete_func(struct Func*);
-void delete_call(struct Call*);
-void delete_if(struct IF*);
-void delete_number(struct Number*);
-void delete_string(struct String*);
-void delete_boolean(struct Boolean*);
-void delete_variable(struct Variable*);
-void delete_assign(struct Assign*);
-void delete_array(struct Array*);
-void delete_binary(struct Binary*);
-void delete_index(struct Index*);
-void delete_return(struct Return*);
-void delete_while(struct While*);
-void delete_foreach(struct Foreach*);
-
-
 typedef struct 
 {
     wchar* operator;
@@ -207,7 +189,7 @@ typedef struct
 size_t find_priority(const wchar*);
 
 //parce functions
-struct Expretion* parce(tk_node* main);
+struct Expretion* parce(tk_node* main, Arena*);
 struct Expretion* parce_expr(void);
 struct Expretion* parce_atom(void);
 struct Expretion* mb_binary(struct Expretion*, size_t);

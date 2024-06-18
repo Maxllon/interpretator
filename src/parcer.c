@@ -1,10 +1,11 @@
 #include "parcer.h"
 
 static tk_node *tk_list = NULL;
+static Arena* ARENA = NULL;
 
 struct Expretion *create_empty_expr(expr_kind kind)
 {
-    struct Expretion *expr = malloc(sizeof(struct Expretion));
+    struct Expretion *expr = arena_alloc(ARENA, sizeof(struct Expretion));
     expr->kind = kind;
     switch (kind)
     {
@@ -57,7 +58,7 @@ struct Expretion *create_empty_expr(expr_kind kind)
         break;
     default:
         wprintf(L"Ошибка: некорректный тип выражения <%d><%d>\n", tk_list->pos.x, tk_list->pos.y);
-        exit(1);
+        EXIT;
         break;
     }
     return expr;
@@ -65,34 +66,34 @@ struct Expretion *create_empty_expr(expr_kind kind)
 
 struct Seque *create_empty_seque(void)
 {
-    struct Seque *seque = malloc(sizeof(struct Seque));
+    struct Seque *seque = arena_alloc(ARENA, sizeof(struct Seque));
 
-    seque->expretions = bm_vector_create();
+    seque->expretions = bm_vector_create(ARENA);
 
     return seque;
 }
 struct Func *create_empty_func(void)
 {
-    struct Func *func = malloc(sizeof(struct Func));
+    struct Func *func = arena_alloc(ARENA, sizeof(struct Func));
     func->name = NULL;
     func->body = NULL;
 
-    func->arguments = bm_vector_create();
+    func->arguments = bm_vector_create(ARENA);
 
     return func;
 }
 struct Call *create_empty_call(void)
 {
-    struct Call *call = malloc(sizeof(struct Call));
+    struct Call *call = arena_alloc(ARENA, sizeof(struct Call));
     call->name = NULL;
 
-    call->arguments = bm_vector_create();
+    call->arguments = bm_vector_create(ARENA);
 
     return call;
 }
 struct IF *create_empty_if(void)
 {
-    struct IF *If = malloc(sizeof(struct IF));
+    struct IF *If = arena_alloc(ARENA, sizeof(struct IF));
     If->cond = NULL;
     If->els = NULL;
     If->then = NULL;
@@ -100,46 +101,46 @@ struct IF *create_empty_if(void)
 }
 struct Number *create_empty_number(void)
 {
-    struct Number *number = malloc(sizeof(struct Number));
+    struct Number *number = arena_alloc(ARENA, sizeof(struct Number));
     number->value = NULL;
     return number;
 }
 struct String *create_empty_string(void)
 {
-    struct String *str = malloc(sizeof(struct String));
+    struct String *str = arena_alloc(ARENA, sizeof(struct String));
     str->value = NULL;
     return str;
 }
 struct Boolean *create_empty_boolean(void)
 {
-    struct Boolean *boolean = malloc(sizeof(struct Boolean));
+    struct Boolean *boolean = arena_alloc(ARENA, sizeof(struct Boolean));
     boolean->value = NULL;
     return boolean;
 }
 struct Variable *create_empty_variable(void)
 {
-    struct Variable *var = malloc(sizeof(struct Variable));
+    struct Variable *var = arena_alloc(ARENA, sizeof(struct Variable));
     var->name = NULL;
     return var;
 }
 struct Assign *create_empty_assign(void)
 {
-    struct Assign *assign = malloc(sizeof(struct Assign));
+    struct Assign *assign = arena_alloc(ARENA, sizeof(struct Assign));
     assign->right = NULL;
     assign->var = NULL;
     return assign;
 }
 struct Array *create_empty_array(void)
 {
-    struct Array *array = malloc(sizeof(struct Array));
+    struct Array *array = arena_alloc(ARENA, sizeof(struct Array));
 
-    array->expretions = bm_vector_create();
+    array->expretions = bm_vector_create(ARENA);
 
     return array;
 }
 struct Binary *create_empty_binary(void)
 {
-    struct Binary *bin = malloc(sizeof(struct Binary));
+    struct Binary *bin = arena_alloc(ARENA, sizeof(struct Binary));
     bin->left = NULL;
     bin->op = NULL;
     bin->right = NULL;
@@ -148,7 +149,7 @@ struct Binary *create_empty_binary(void)
 
 struct Index* create_empty_index(void)
 {
-    struct Index* index = malloc(sizeof(struct Index));
+    struct Index* index = arena_alloc(ARENA, sizeof(struct Index));
     index->index = NULL;
     index->destination = NULL;
     return index;
@@ -156,14 +157,14 @@ struct Index* create_empty_index(void)
 
 struct Return* create_empty_return(void)
 {
-    struct Return* return_t = malloc(sizeof(struct Return));
+    struct Return* return_t = arena_alloc(ARENA, sizeof(struct Return));
     return_t->value = NULL;
     return return_t;
 }
 
 struct While* create_empty_while(void)
 {
-    struct While* while_t = malloc(sizeof(struct While));
+    struct While* while_t = arena_alloc(ARENA, sizeof(struct While));
     while_t->body = NULL;
     while_t->cond = NULL;
     return while_t;
@@ -171,180 +172,11 @@ struct While* create_empty_while(void)
 
 struct Foreach* create_empty_foreach(void)
 {
-    struct Foreach* foreach = malloc(sizeof(struct Foreach));
+    struct Foreach* foreach = arena_alloc(ARENA, sizeof(struct Foreach));
     foreach->body = NULL;
     foreach->list = NULL;
     foreach->var = NULL;
     return foreach;
-}
-
-void delete_expr(struct Expretion *expr)
-{
-    if (expr == NULL)
-        return;
-    switch (expr->kind)
-    {
-    case SEQUE_EXPR:
-        delete_seque(expr->seque);
-        break;
-    case FUNC_EXPR:
-        delete_func(expr->func);
-        break;
-    case CALL_EXPR:
-        delete_call(expr->call);
-        break;
-    case IF_EXPR:
-        delete_if(expr->If);
-        break;
-    case NUMBER_EXPR:
-        delete_number(expr->number);
-        break;
-    case STRING_EXPR:
-        delete_string(expr->string);
-        break;
-    case BOOLEAN_EXPR:
-        delete_boolean(expr->boolean);
-        break;
-    case VARIABLE_EXPR:
-        delete_variable(expr->variable);
-        break;
-    case ASSIGN_EXPR:
-        delete_assign(expr->assign);
-        break;
-    case BINARY_EXPR:
-        delete_binary(expr->binary);
-        break;
-    case ARRAY_EXPR:
-        delete_array(expr->array);
-        break;
-    case INDEX_EXPR:
-        delete_index(expr->index);
-        break;
-    case VOID_EXPR:
-        break;
-    case RETURN_EXPR:
-        delete_return(expr->return_t);
-        break;
-    case WHILE_EXPR:
-        delete_while(expr->while_t);
-        break;
-    case FOREACH_EXPR:
-        delete_foreach(expr->foreach);
-        break;
-    default:
-        wprintf(L"Ошибка: некорректный тип выражения\n");
-        system("pause");
-        exit(1);
-        break;
-    }
-    bm_free(expr);
-}
-void delete_seque(struct Seque *seque)
-{
-    for (size_t i = 0; i < seque->expretions->len; ++i)
-    {
-        delete_expr(bm_vector_at(seque->expretions, i));
-    }
-    bm_vector_free(seque->expretions);
-    bm_free(seque);
-}
-void delete_func(struct Func *func)
-{
-    for (size_t i = 0; i < func->arguments->len; ++i)
-    {
-        delete_expr(bm_vector_at(func->arguments, i));
-    }
-    bm_free(func->name);
-    delete_expr(func->body);
-    bm_vector_free(func->arguments);
-    bm_free(func);
-}
-void delete_call(struct Call *call)
-{
-    for (size_t i = 0; i < call->arguments->len; ++i)
-    {
-        delete_expr(bm_vector_at(call->arguments, i));
-    }
-    bm_free(call->name);
-    bm_vector_free(call->arguments);
-    bm_free(call);
-}
-void delete_if(struct IF *If)
-{
-    delete_expr(If->cond);
-    delete_expr(If->then);
-    delete_expr(If->els);
-    bm_free(If);
-}
-void delete_number(struct Number *num)
-{
-    bm_free(num->value);
-    bm_free(num);
-}
-void delete_string(struct String *str)
-{
-    bm_free(str->value);
-    bm_free(str);
-}
-void delete_boolean(struct Boolean *boolean)
-{
-    bm_free(boolean->value);
-    bm_free(boolean);
-}
-void delete_variable(struct Variable *var)
-{
-    bm_free(var->name);
-    bm_free(var);
-}
-void delete_assign(struct Assign *assign)
-{
-    delete_expr(assign->var);
-    delete_expr(assign->right);
-    bm_free(assign);
-}
-void delete_array(struct Array *array)
-{
-    for (size_t i = 0; i < array->expretions->len; ++i)
-    {
-        delete_expr(bm_vector_at(array->expretions,i));
-    }
-    bm_vector_free(array->expretions);
-    bm_free(array);
-}
-void delete_binary(struct Binary *bin)
-{
-    delete_expr(bin->left);
-    delete_expr(bin->right);
-    bm_free(bin->op);
-    bm_free(bin);
-}
-
-void delete_index(struct Index* index)
-{
-    delete_expr(index->index);
-    delete_expr(index->destination);
-    bm_free(index);
-}
-
-void delete_return(struct Return* return_t)
-{
-    delete_expr(return_t->value);
-    bm_free(return_t);
-}
-
-void delete_while(struct While* while_t)
-{
-    delete_expr(while_t->body);
-    delete_expr(while_t->cond);
-    bm_free(while_t);
-}
-
-void delete_foreach(struct Foreach* foreach)
-{
-    delete_expr(foreach->body);
-    delete_expr(foreach->var);
-    delete_expr(foreach->list);
-    bm_free(foreach);
 }
 
 int skip(wchar *str)
@@ -352,8 +184,7 @@ int skip(wchar *str)
     if(tk_list->kind == END)
     {
         wprintf(L"Ошибка: упущен символ <%ls> в позиции <%d><%d>\n", str, tk_list->pos.x, tk_list->pos.y);
-        system("pause");
-        exit(1);
+        EXIT;
         return 1;
     }
     if (wcscmp(tk_list->value, str) == 0)
@@ -362,19 +193,19 @@ int skip(wchar *str)
         return 0;
     }
     wprintf(L"Ошибка: упущен символ <%ls> в позиции <%d><%d>\n", str, tk_list->pos.x, tk_list->pos.y);
-    system("pause");
-    exit(1);
+    EXIT;
     return 1;
 }
 
-struct Expretion *parce(tk_node *main)
+struct Expretion *parce(tk_node *main, Arena* arena)
 {
+    ARENA = arena;
     tk_list = main;
     tk_list = tk_list->next;
     struct Expretion *expr = create_empty_expr(SEQUE_EXPR);
     while (tk_list->kind != END)
     {
-        bm_vector_push(expr->seque->expretions, parce_expr());
+        bm_vector_push(expr->seque->expretions, parce_expr(), ARENA);
         skip(L";");
     }
     if(out_tree) out_expretion(expr, 0);
@@ -412,7 +243,7 @@ struct Expretion* parce_atom(void)
             if(wcscmp(tk_list->value, L"БЛЯДЬ") == 0 || wcscmp(tk_list->value, L"БЫЛЬ") == 0)
             {
                 expr = create_empty_expr(BOOLEAN_EXPR);
-                expr->boolean->value = malloc(wcslen(tk_list->value)*2+2);
+                expr->boolean->value = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
                 wcscpy(expr->boolean->value, tk_list->value);
                 break;
             }
@@ -421,18 +252,18 @@ struct Expretion* parce_atom(void)
             break;
         case NUMBER:
             expr = create_empty_expr(NUMBER_EXPR);
-            expr->number->value = malloc(wcslen(tk_list->value)*2+2);
+            expr->number->value = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
             wcscpy(expr->number->value, tk_list->value);
             break;
         case STRING:
             expr = create_empty_expr(STRING_EXPR);
-            expr->string->value = malloc(wcslen(tk_list->value)*2+2);
+            expr->string->value = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
             wcscpy(expr->string->value, tk_list->value);
             break;
         case VARIABLE:
             if(tk_list->next->kind != END) if (wcscmp(tk_list->next->value, L"(") == 0) return parce_call();
             expr = create_empty_expr(VARIABLE_EXPR);
-            expr->variable->name = malloc(wcslen(tk_list->value)*2+2);
+            expr->variable->name = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
             wcscpy(expr->variable->name, tk_list->value);
             break;
         default:
@@ -475,8 +306,7 @@ size_t find_priority(const wchar* op)
         if(wcscmp(op, operators[i].operator)) return operators[i].priority;
     }
     wprintf(L"Cant find this op: %ls\n", op);
-    system("pause");
-    exit(1);
+    EXIT;
 }
 
 struct Expretion* mb_binary(struct Expretion* left, size_t priority)
@@ -492,7 +322,7 @@ struct Expretion* mb_binary(struct Expretion* left, size_t priority)
             struct Expretion* expr = create_empty_expr(BINARY_EXPR);
             expr->binary->left = left;
             expr->binary->right = right;
-            expr->binary->op = malloc(wcslen(op)+2);
+            expr->binary->op = arena_alloc(ARENA, wcslen(op)+2);
             wcscpy(expr->binary->op, op);
             return mb_binary(expr, priority);
         }
@@ -551,8 +381,7 @@ void out_expretion(struct Expretion* expr, size_t indent)
             break;
         default:
             wprintf(L"Ошибка: некорректный тип выражения\n");
-            system("pause");
-            exit(1);
+            EXIT;
             break;
     }
 }
@@ -600,7 +429,7 @@ struct Expretion* parce_seque(void)
 
     while (wcscmp(tk_list->value, L"кц") != 0)
     {
-        bm_vector_push(expr->seque->expretions, parce_expr());
+        bm_vector_push(expr->seque->expretions, parce_expr(), ARENA);
         skip(L";");
     }
     tk_list = tk_list->next;
@@ -612,14 +441,14 @@ struct Expretion* parce_func(void)
     tk_list = tk_list->next;
     struct Expretion* expr = create_empty_expr(FUNC_EXPR);
 
-    expr->func->name = malloc(wcslen(tk_list->value)*2+2);
+    expr->func->name = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
     wcscpy(expr->func->name, tk_list->value);
     skip(expr->func->name);
 
     skip(L"(");
     while(wcscmp(tk_list->value, L")") != 0)
     {
-        bm_vector_push(expr->func->arguments, parce_expr());
+        bm_vector_push(expr->func->arguments, parce_expr(), ARENA);
         if(wcscmp(tk_list->value, L")") != 0) skip(L",");
     }
     skip(L")");
@@ -631,14 +460,14 @@ struct Expretion* parce_func(void)
 struct Expretion* parce_call(void)
 {
     struct Expretion* expr = create_empty_expr(CALL_EXPR);
-    expr->call->name = malloc(wcslen(tk_list->value)*2+2);
+    expr->call->name = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
     wcscpy(expr->call->name, tk_list->value);
 
     tk_list = tk_list->next;
     skip(L"(");
     while(wcscmp(tk_list->value, L")") != 0)
     {
-        bm_vector_push(expr->call->arguments, parce_expr());
+        bm_vector_push(expr->call->arguments, parce_expr(), ARENA);
         if(wcscmp(tk_list->value, L")") != 0) skip(L",");
     }
     skip(L")");
@@ -685,7 +514,7 @@ struct Expretion* parce_array(void)
 
     while(wcscmp(tk_list->value, L"}") != 0)
     {
-        bm_vector_push(expr->array->expretions, parce_expr());
+        bm_vector_push(expr->array->expretions, parce_expr(), ARENA);
         if(wcscmp(tk_list->value, L"}") != 0) skip(L",");
     }
     skip(L"}");
@@ -694,7 +523,7 @@ struct Expretion* parce_array(void)
 
 void out_seque(struct Seque* seque, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -716,12 +545,11 @@ void out_seque(struct Seque* seque, size_t indent)
     }
     wprintf(L"%ls}\n", str);
 
-    free(str);
 }
 
 void out_func(struct Func* func, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -749,12 +577,11 @@ void out_func(struct Func* func, size_t indent)
     out_expretion(func->body, indent+INDENT);
     wprintf(L"%ls}\n", str);
 
-    free(str);
 }
 
 void out_call(struct Call* call, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -777,12 +604,11 @@ void out_call(struct Call* call, size_t indent)
     }
     wprintf(L"%ls)\n", str);
 
-    free(str);
 }
 
 void out_index(struct Index* index, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -801,12 +627,11 @@ void out_index(struct Index* index, size_t indent)
     out_expretion(index->index, indent+INDENT);
     wprintf(L"%ls{:\n", str);
 
-    free(str);
 }
 
 void out_binary(struct Binary* bin, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -824,13 +649,12 @@ void out_binary(struct Binary* bin, size_t indent)
     wprintf(L"%lsСправа:\n", str);
     wprintf(L"%ls{\n", str);
     out_expretion(bin->right, indent+INDENT);
-    wprintf(L"%ls}\n", str);
-    free(str);
+    wprintf(L"%ls}\n", str);;
 }
 
 void out_number(struct Number* num, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -839,13 +663,11 @@ void out_number(struct Number* num, size_t indent)
 
     wprintf(L"%lsТип: число\n", str);
     wprintf(L"%lsЗначение: %ls\n", str, num->value);
-
-    free(str);
 }
 
 void out_variable(struct Variable* var, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -854,13 +676,11 @@ void out_variable(struct Variable* var, size_t indent)
 
     wprintf(L"%lsТип: переменнная\n", str);
     wprintf(L"%lsИмя: %ls\n", str, var->name);
-
-    free(str);
 }
 
 void out_string(struct String* string, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -869,13 +689,11 @@ void out_string(struct String* string, size_t indent)
 
     wprintf(L"%lsТип: строка\n", str);
     wprintf(L"%lsЗначение: %ls\n", str, string->value);
-
-    free(str);
 }
 
 void out_if(struct IF* If, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -904,7 +722,7 @@ void out_if(struct IF* If, size_t indent)
 }
 void out_return(struct Return* return_t, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -916,12 +734,10 @@ void out_return(struct Return* return_t, size_t indent)
     wprintf(L"%ls{\n", str);
     out_expretion(return_t->value, indent+INDENT);
     wprintf(L"%ls}\n", str);
-
-    free(str);
 }
 void out_void(size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -929,12 +745,10 @@ void out_void(size_t indent)
     *(str+indent) = L'\0';
 
     wprintf(L"%lsТип: пустота\n", str);
-
-    free(str);  
 }
 void out_boolean(struct Boolean* boolean, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -943,13 +757,11 @@ void out_boolean(struct Boolean* boolean, size_t indent)
 
     wprintf(L"%lsТип: логический\n", str);
     wprintf(L"%lsЗначение: %ls\n", str, boolean->value);
-
-    free(str); 
 }
 
 void out_while(struct While* while_t, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -967,13 +779,11 @@ void out_while(struct While* while_t, size_t indent)
     wprintf(L"%ls{\n", str);
     out_expretion(while_t->body, indent+INDENT);
     wprintf(L"%ls}\n", str);
-
-    free(str);  
 }
 
 void out_foreach(struct Foreach* foreach, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -991,13 +801,11 @@ void out_foreach(struct Foreach* foreach, size_t indent)
     wprintf(L"%ls{\n", str);
     out_expretion(foreach->body, indent+INDENT);
     wprintf(L"%ls}\n", str);
-
-    free(str);  
 }
 
 void out_array(struct Array* array, size_t indent)
 {
-    wchar* str = malloc(2*indent+2);
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
     for(size_t i = 0; i < indent; ++i)
     {
         *(str+i) = L' ';
@@ -1018,7 +826,4 @@ void out_array(struct Array* array, size_t indent)
         out_expretion(bm_vector_at(array->expretions, i), indent+INDENT);
     }
     wprintf(L"%ls]\n", str);
-
-
-    free(str);
 }
