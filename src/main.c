@@ -6,6 +6,7 @@
 #include"lexer.h"
 #include"parcer.h"
 #include"arena.h"
+#include"interpretator.h"
 
 int main(int argc, char *argv[])
 {
@@ -20,7 +21,8 @@ int main(int argc, char *argv[])
     tk_node* main = lexing(file, ARENA);
 
     struct Expretion* expr = parce(main, ARENA);
-    
+    Object* obj = interpretate(expr, ARENA);
+
     arena_destroy(ARENA);
     system("pause");
     return 0;

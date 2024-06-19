@@ -322,7 +322,7 @@ struct Expretion* mb_binary(struct Expretion* left, size_t priority)
             struct Expretion* expr = create_empty_expr(BINARY_EXPR);
             expr->binary->left = left;
             expr->binary->right = right;
-            expr->binary->op = arena_alloc(ARENA, wcslen(op)+2);
+            expr->binary->op = arena_alloc(ARENA, wcslen(op)*2 + 2);
             wcscpy(expr->binary->op, op);
             return mb_binary(expr, priority);
         }

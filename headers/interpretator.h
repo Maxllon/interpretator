@@ -4,6 +4,7 @@
 #include"includes.h"
 #include"parcer.h"
 #include"bm_vector.h"
+#include"arena.h"
 
 typedef struct Expretion Expretion;
 
@@ -32,7 +33,7 @@ struct Environment
     Environment* parent;
 };
 Object* find_object(Environment*, wchar*);
-Errno add_object(Environment*, Object*);
+void add_object(Environment*, Object*);
 
 struct Object
 {
@@ -64,6 +65,14 @@ struct Func_Obj
 };
 
 Environment* create_empty_environment(Environment*);
+
+Object* interpretate_var(Expretion*);
+Object* interpretate_bin(Expretion*);
+Object* interpretate_num(Expretion*);
+Object* interpretate_atom(Expretion*);
+
+Object* interpretate(Expretion*, Arena*);
+
 
 
 #endif
