@@ -22,11 +22,13 @@ typedef enum
     BINARY_EXPR,
     ARRAY_EXPR,
     INDEX_EXPR,
-    RETURN_EXPR,
     VOID_EXPR,
 
     WHILE_EXPR,
-    FOREACH_EXPR
+    FOREACH_EXPR,
+
+    BREAK_EXPR,
+    RETURN_EXPR
 
 }expr_kind;
 
@@ -161,6 +163,7 @@ struct Foreach
     struct Expretion* body;
 };
 
+
 //create expr functions
 struct Expretion* create_empty_expr(expr_kind);
 struct Seque* create_empty_seque(void);
@@ -221,5 +224,6 @@ void out_boolean(struct Boolean*, size_t);
 void out_while(struct While*, size_t);
 void out_foreach(struct Foreach*, size_t);
 void out_array(struct Array*, size_t);
+void out_break(size_t);
 
 #endif

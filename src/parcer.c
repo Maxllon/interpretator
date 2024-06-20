@@ -47,6 +47,8 @@ struct Expretion *create_empty_expr(expr_kind kind)
         break;
     case VOID_EXPR:
         break;
+    case BREAK_EXPR:
+        break;
     case RETURN_EXPR:
         expr->return_t = create_empty_return();
         break;
@@ -249,6 +251,11 @@ struct Expretion* parce_atom(void)
             }
             if(wcscmp(tk_list->value, L"доселе") == 0) return parce_while();
             if(wcscmp(tk_list->value, L"бери") == 0) return parce_foreach();
+            if(wcscmp(tk_list->value, L"рвать") == 0)
+            {
+                tk_list = tk_list->next;
+                return create_empty_expr(BREAK_EXPR);
+            }
             break;
         case NUMBER:
             expr = create_empty_expr(NUMBER_EXPR);
@@ -363,6 +370,9 @@ void out_expretion(struct Expretion* expr, size_t indent)
             break;
         case VOID_EXPR:
             out_void(indent);
+            break;
+        case BREAK_EXPR:
+            out_break(indent);
             break;
         case RETURN_EXPR:
             out_return(expr->return_t, indent);
@@ -826,4 +836,16 @@ void out_array(struct Array* array, size_t indent)
         out_expretion(bm_vector_at(array->expretions, i), indent+INDENT);
     }
     wprintf(L"%ls]\n", str);
+}
+
+void out_break(size_t indent)
+{
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: выход из цикла\n", str);
 }
