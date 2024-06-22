@@ -33,6 +33,7 @@ struct Environment
     Environment* parent;
 };
 Object* find_object(Environment*, wchar*);
+Object* get_object(Environment*, wchar*);
 void add_object(Environment*, Object*);
 
 struct Object
@@ -65,8 +66,6 @@ struct Func_Obj
 };
 
 Environment* create_empty_environment(Environment*);
-
-Object* copy_object(Object*);
 
 Object* interpretate_var(Expretion*);
 Object* interpretate_bin(Expretion*);
