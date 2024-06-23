@@ -3,6 +3,7 @@
 
 static Arena* ARENA = NULL;
 static Environment* current_envi = NULL;
+static Object* Null_object = NULL;
 Environment* create_empty_environment(Environment* parent)
 {
     Environment* envi = arena_alloc(ARENA, sizeof(Environment));
@@ -11,10 +12,28 @@ Environment* create_empty_environment(Environment* parent)
     return envi;
 } 
 
+Object* interpretate_var(Expretion* expr)
+{
+    wchar* name = expr->variable->name;
+    Object* obj = find_object(current_envi, name);
+    if(obj == NULL)
+    {
+        obj = arena_alloc(ARENA, sizeof(Object));
+        obj->var = arena_alloc(ARENA, sizeof(Var_Obj));
+        obj->var->name = arena_alloc(ARENA, 2 * (wcslen(name) + 1));
+        wcscpy(obj->var->name, name);
+        obj->var->value = Null_object;
+        return obj;
+    }
+    return obj;
+}
+
 Object* interpretate_atom(Expretion* expr)
 {
     switch(expr->kind)
     {
+        case VARIABLE_EXPR:
+            return interpretate_var(expr);
         default:
             wprintf("Ошибка интерпретации: неизвестный тип выражения: %d\n", expr->kind);
             EXIT;
@@ -25,10 +44,13 @@ Object* interpretate_atom(Expretion* expr)
 
 Object* interpretate(Expretion* expr, Arena* arena)
 {
+
     ARENA = arena;
     current_envi = arena_alloc(ARENA, sizeof(Environment));
     current_envi->parent = NULL;
     current_envi->variables = bm_vector_create(ARENA);
+    Null_object = arena_alloc(ARENA, sizeof(Object*));
+    Null_object->kind = EMPTY_OBJ;
 
     Object* obj = NULL;
     for(size_t i = 0; i < expr->seque->expretions->len; ++i)

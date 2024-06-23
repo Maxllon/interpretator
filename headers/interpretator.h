@@ -33,7 +33,7 @@ struct Environment
     Environment* parent;
 };
 Object* find_object(Environment*, wchar*);
-Object* get_object(Environment*, wchar*);
+Object* get_object(Object*);
 void add_object(Environment*, Object*);
 
 struct Object
