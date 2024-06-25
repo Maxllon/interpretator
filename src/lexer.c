@@ -41,6 +41,10 @@ void out_tk_list(tk_node *main)
         wprintf(L"Позиция токена: %d %d\n\n", token->pos.x, token->pos.y);  
         ++i;
     }
+    wprintf(L"<%d>", i);
+    wprintf(L"Тип токена: %s\n", TOKEN_NAMES[END]);
+    wprintf(L"Значение токена: %ls\n", NULL);
+    wprintf(L"Позиция токена: %d %d\n\n", -1, -1);  
     printf("\n\n\n");
 }
 static size_t count(wchar* str, wchar symb)
@@ -152,6 +156,13 @@ tk_node* lexing(wchar* file, Arena* arena)
             if(count(str, L'.') > 1)
             {
                 wprintf(L"Ошибка: В числе не может быть две точки!! <%d><%d>\n", pos.x, pos.y);
+                EXIT;
+            }
+            wchar* temp = str;
+            while(*(temp) != L'\0') temp++;
+            if(*(temp-1) == L'.')
+            {
+                wprintf(L"Ошибка: Число не должно заканчиваться точкой!! <%d><%d>\n", pos.x, pos.y);
                 EXIT;
             }
             

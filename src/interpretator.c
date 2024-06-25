@@ -74,6 +74,28 @@ Object* interpretate(Expretion* expr, Arena* arena)
 }
 
 /*
+возвращает число типа, которого оно является
+*/
+Object* interpretate_num(Expretion* expr)
+{
+    Object* obj = arena_alloc(ARENA, sizeof(Object));
+    wchar c;
+    wchar* end_ptr;
+    for(size_t i = 0; (c = *(expr->number->value + i)) != L'\0'; ++i)
+    {
+        if(c == L'.')
+        {
+            obj->kind = FLOAT_OBJ;
+            obj->float_t = wcstold(expr->number->value, &end_ptr);
+            return obj;
+        }
+    }
+    obj->kind = INTEGER_OBJ;
+    obj->float_t = wcstoll(expr->number->value, &end_ptr, 10);
+    return obj;
+}
+
+/*
 ищет переменную в заданном пространстве имен
 возвращает ссылку на нее или NULL если переменной с заданным именем нет
 */
@@ -127,6 +149,14 @@ Object* interpretate_list(Expretion* expr)
         bm_vector_push(obj->list, get_object(((Object*)bm_vector_at(expr->array->expretions, i))));
     }
     return obj;
+}
+
+/*
+возвращает ссылку на пустой объект
+*/
+Object* interpretate_void()
+{
+    return Null_object;
 }
 
 /*

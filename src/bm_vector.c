@@ -23,7 +23,7 @@ void bm_vector_push(bm_vector* vec, void* item)
 
 void* bm_vector_at(bm_vector* vec, size_t index)
 {
-    if(vec->len > index+1)
+    if(vec->len < index)
     {
         wprintf(L"Ошибка: индекс элемента за пределами последовательности!!!\n");
         arena_destroy(vec->arena);

@@ -210,7 +210,7 @@ struct Expretion *parce(tk_node *main, Arena* arena)
         bm_vector_push(expr->seque->expretions, parce_expr());
         skip(L";");
     }
-    if(out_tree) out_expretion(expr, 0);
+    if(out_tree && expr->array->expretions->len > 0) out_expretion(expr, 0);
     return expr;
 }
 

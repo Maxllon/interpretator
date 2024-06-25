@@ -32,7 +32,7 @@ Errno read_file(char* filename, wchar** buffer, Arena* ARENA)
     }
     fsize(input, &size);
 
-    *buffer = arena_alloc(ARENA, sizeof(wchar)*size);
+    *buffer = arena_alloc(ARENA, sizeof(wchar)*(size + 1));
     wchar sym;
     size_t i = 0;
     while((sym = fgetwc(input)) != WEOF)
