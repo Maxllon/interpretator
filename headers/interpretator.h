@@ -69,12 +69,12 @@ Environment* create_empty_environment(Environment*);
 
 Object* interpretate_var(Expretion*);//
 Object* interpretate_bin(Expretion*);
-Object* interpretate_num(Expretion*);
+Object* interpretate_num(Expretion*);//
 Object* interpretate_atom(Expretion*);
 Object* interpretate_str(Expretion*);//
-Object* interpretate_bool(Expretion*);
+Object* interpretate_bool(Expretion*);//
 Object* interpretate_list(Expretion*);//
-Object* interpretate_void(void);
+Object* interpretate_void(void);//
 Object* interpretate_call(Expretion*);
 Object* interpretate_func(Expretion*);
 Object* interpretate_while(Expretion*);

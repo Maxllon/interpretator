@@ -4,6 +4,10 @@
 static Arena* ARENA = NULL;
 static Environment* current_envi = NULL;
 static Object* Null_object = NULL;
+
+/*
+получает ссылку на родителя-пространство_имен и создает пустое пространство имен
+*/
 Environment* create_empty_environment(Environment* parent)
 {
     Environment* envi = arena_alloc(ARENA, sizeof(Environment));
@@ -44,6 +48,14 @@ Object* interpretate_atom(Expretion* expr)
     {
         case VARIABLE_EXPR:
             return interpretate_var(expr);
+        case NUMBER_EXPR:
+            return interpretate_num(expr);
+        case VOID_EXPR:
+            return interpretate_void();
+        case ARRAY_EXPR:
+            return interpretate_list(expr);
+        case STRING_EXPR:
+            return interpretate_str(expr);
         default:
             wprintf(L"Ошибка интерпретации: неизвестный тип выражения: %d\n", expr->kind);
             EXIT;
@@ -146,7 +158,7 @@ Object* interpretate_list(Expretion* expr)
     obj->list = bm_vector_create(ARENA);
     for(size_t i = 0; i < expr->array->expretions->len; ++i)
     {
-        bm_vector_push(obj->list, get_object(((Object*)bm_vector_at(expr->array->expretions, i))));
+        bm_vector_push(obj->list, get_object(interpretate_atom((Expretion*)bm_vector_at(expr->array->expretions, i))));
     }
     return obj;
 }
@@ -168,8 +180,16 @@ Object* get_object(Object* obj)
 {
     if(obj->kind != VARIABLE_OBJ) return obj;
     Object* object = obj->var->value;
+    if(object->kind == EMPTY_OBJ)
+    {
+        wprintf(L"Нельзя обращаться к переменной <%ls>, пока она пустая!!!\n", obj->var->name);
+        EXIT;
+    }
     switch(object->kind)
     {
+        case EMPTY_OBJ:
+            object = Null_object;
+            break;
         default:
             wprintf(L"Не могу получить доступа к объекту!!\n");
             EXIT;
@@ -177,6 +197,9 @@ Object* get_object(Object* obj)
     return object;
 }
 
+/*
+добавляет в текущее пространство имен переменную
+*/
 void add_object(Object* obj)
 {
     if(obj->kind != VARIABLE_OBJ)
