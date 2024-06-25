@@ -6,15 +6,16 @@ bm_vector* bm_vector_create(Arena* arena)
     vec->data = arena_alloc(arena, BM_VECTOR_BLOCK);
     vec->capacity = BM_VECTOR_BLOCK;
     vec->len = 0;
+    vec->arena = arena;
     return vec;
 }
 
-void bm_vector_push(bm_vector* vec, void* item, Arena* arena)
+void bm_vector_push(bm_vector* vec, void* item)
 {
     vec->len++;
     if(vec->len > vec->capacity)
     {
-        vec->data = arena_realloc(arena, vec->data, sizeof(void*) * (vec->capacity + BM_VECTOR_BLOCK));
+        vec->data = arena_realloc(vec->arena, vec->data, sizeof(void*) * (vec->capacity + BM_VECTOR_BLOCK));
         vec->capacity += BM_VECTOR_BLOCK;
     }
     vec->data[vec->len-1] = item;
@@ -22,6 +23,13 @@ void bm_vector_push(bm_vector* vec, void* item, Arena* arena)
 
 void* bm_vector_at(bm_vector* vec, size_t index)
 {
+    if(vec->len > index+1)
+    {
+        wprintf(L"Ошибка: индекс элемента за пределами последовательности!!!\n");
+        arena_destroy(vec->arena);
+        system("pause");
+        exit(1);
+    }
     return vec->data[index];
 }
 

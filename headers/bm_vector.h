@@ -12,10 +12,11 @@ struct bm_vector
     void** data;
     size_t len;
     size_t capacity;
+    Arena* arena;
 };
 
 bm_vector* bm_vector_create(Arena*);
-void bm_vector_push(bm_vector*, void*, Arena*);
+void bm_vector_push(bm_vector*, void*);
 void* bm_vector_at(bm_vector*, size_t);
 
 #endif

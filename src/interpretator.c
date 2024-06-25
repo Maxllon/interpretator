@@ -12,6 +12,11 @@ Environment* create_empty_environment(Environment* parent)
     return envi;
 } 
 
+/*
+если переменная есть в текущем пространстве имен, возвращает ссылку на нее
+иначе создает переменную, которая указывает на пустой обьект, и возвращает ссылку на нее
+*/
+
 Object* interpretate_var(Expretion* expr)
 {
     wchar* name = expr->variable->name;
@@ -19,15 +24,20 @@ Object* interpretate_var(Expretion* expr)
     if(obj == NULL)
     {
         obj = arena_alloc(ARENA, sizeof(Object));
+        obj->kind = VARIABLE_OBJ;
+
         obj->var = arena_alloc(ARENA, sizeof(Var_Obj));
         obj->var->name = arena_alloc(ARENA, 2 * (wcslen(name) + 1));
         wcscpy(obj->var->name, name);
+
         obj->var->value = Null_object;
-        return obj;
     }
     return obj;
 }
 
+/*
+интерпретирует выражение в обьект и возвращает ссылку на сам объект
+*/
 Object* interpretate_atom(Expretion* expr)
 {
     switch(expr->kind)
@@ -35,16 +45,19 @@ Object* interpretate_atom(Expretion* expr)
         case VARIABLE_EXPR:
             return interpretate_var(expr);
         default:
-            wprintf("Ошибка интерпретации: неизвестный тип выражения: %d\n", expr->kind);
+            wprintf(L"Ошибка интерпретации: неизвестный тип выражения: %d\n", expr->kind);
             EXIT;
     }
     return NULL;
 }
 
-
+/*
+проходит по списку всех выражений и интерпретирует их по одному
+возвращает результат интерпретации последнего выражения
+*/
 Object* interpretate(Expretion* expr, Arena* arena)
 {
-
+    //инициализация глобальных переменных
     ARENA = arena;
     current_envi = arena_alloc(ARENA, sizeof(Environment));
     current_envi->parent = NULL;
@@ -60,6 +73,10 @@ Object* interpretate(Expretion* expr, Arena* arena)
     return obj;
 }
 
+/*
+ищет переменную в заданном пространстве имен
+возвращает ссылку на нее или NULL если переменной с заданным именем нет
+*/
 Object* find_object(Environment* envi, wchar* name)
 {
     for(size_t i = 0; i < envi->variables->len; ++i)
@@ -70,26 +87,72 @@ Object* find_object(Environment* envi, wchar* name)
     return NULL;
 }
 
-Object* get_object(Environment* envi, wchar* name)
+/*
+получает на вход выражение
+возвращает обьект-строку
+*/
+Object* interpretate_str(Expretion* expr)
 {
-    for(size_t i = 0; i < envi->variables->len; ++i)
-    {
-        if(wcscmp(name, ((Object*)bm_vector_at(envi->variables, i))->var->name) == 0)
-        {
-            Object* obj = ((Object*)bm_vector_at(envi->variables, i));
-            switch(obj->kind)
-            {
-                default:
-                    wprintf("Не могу найти обьект типа: %d\n", obj->kind);
-                    EXIT;
-            }
-        }
-    }
-    if(envi->parent != NULL) return get_object(envi->parent, name);
-    return NULL;
+    Object* obj = arena_alloc(ARENA, sizeof(Object));
+    obj->kind = STRING_OBJ;
+    obj->str = arena_alloc(ARENA, 2 * (wcslen(expr->string->value) + 1));
+    wcscpy(obj->str, expr->string->value);
+    return obj;
 }
 
-void add_object(Environment* envi, Object* obj)
+/*
+получает на вход выражение
+возвращает обьект-логика
+*/
+Object* interpretate_bool(Expretion* expr)
 {
-    bm_vector_push(envi->variables, obj, ARENA);
+    Object* obj = arena_alloc(ARENA, sizeof(Object));
+    obj->kind = BOOLEAN_OBJ;
+    if(wcscmp(expr->boolean->value, L"БЛЯДЬ") == 0) obj->bool_t = 0;
+    else obj->bool_t = 1;
+    return obj;
+}
+
+/*
+получает на вход выражение
+возвращает обьект-список
+*/
+Object* interpretate_list(Expretion* expr)
+{
+    Object* obj = arena_alloc(ARENA, sizeof(Object));
+    obj->kind = LIST_OBJ;
+    obj->list = bm_vector_create(ARENA);
+    for(size_t i = 0; i < expr->array->expretions->len; ++i)
+    {
+        bm_vector_push(obj->list, get_object(((Object*)bm_vector_at(expr->array->expretions, i))));
+    }
+    return obj;
+}
+
+/*
+получает на вход переменную
+решает вернуть ссылку на объект или ссылку на его копию
+если получает не объект переменной, то возвращает его
+*/
+Object* get_object(Object* obj)
+{
+    if(obj->kind != VARIABLE_OBJ) return obj;
+    Object* object = obj->var->value;
+    switch(object->kind)
+    {
+        default:
+            wprintf(L"Не могу получить доступа к объекту!!\n");
+            EXIT;
+    }
+    return object;
+}
+
+void add_object(Object* obj)
+{
+    if(obj->kind != VARIABLE_OBJ)
+    {
+        wprintf(L"Ожидался объект типа переменная, но была попытка добавить в пространство имен: %d\n", obj->kind);
+        EXIT;
+    }
+    bm_vector_push(current_envi->variables, obj);
 }

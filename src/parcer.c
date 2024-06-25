@@ -207,7 +207,7 @@ struct Expretion *parce(tk_node *main, Arena* arena)
     struct Expretion *expr = create_empty_expr(SEQUE_EXPR);
     while (tk_list->kind != END)
     {
-        bm_vector_push(expr->seque->expretions, parce_expr(), ARENA);
+        bm_vector_push(expr->seque->expretions, parce_expr());
         skip(L";");
     }
     if(out_tree) out_expretion(expr, 0);
@@ -439,7 +439,7 @@ struct Expretion* parce_seque(void)
 
     while (wcscmp(tk_list->value, L"кц") != 0)
     {
-        bm_vector_push(expr->seque->expretions, parce_expr(), ARENA);
+        bm_vector_push(expr->seque->expretions, parce_expr());
         skip(L";");
     }
     tk_list = tk_list->next;
@@ -458,7 +458,7 @@ struct Expretion* parce_func(void)
     skip(L"(");
     while(wcscmp(tk_list->value, L")") != 0)
     {
-        bm_vector_push(expr->func->arguments, parce_expr(), ARENA);
+        bm_vector_push(expr->func->arguments, parce_expr());
         if(wcscmp(tk_list->value, L")") != 0) skip(L",");
     }
     skip(L")");
@@ -477,7 +477,7 @@ struct Expretion* parce_call(void)
     skip(L"(");
     while(wcscmp(tk_list->value, L")") != 0)
     {
-        bm_vector_push(expr->call->arguments, parce_expr(), ARENA);
+        bm_vector_push(expr->call->arguments, parce_expr());
         if(wcscmp(tk_list->value, L")") != 0) skip(L",");
     }
     skip(L")");
@@ -524,7 +524,7 @@ struct Expretion* parce_array(void)
 
     while(wcscmp(tk_list->value, L"}") != 0)
     {
-        bm_vector_push(expr->array->expretions, parce_expr(), ARENA);
+        bm_vector_push(expr->array->expretions, parce_expr());
         if(wcscmp(tk_list->value, L"}") != 0) skip(L",");
     }
     skip(L"}");

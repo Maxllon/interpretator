@@ -32,9 +32,9 @@ struct Environment
     bm_vector* variables;
     Environment* parent;
 };
-Object* find_object(Environment*, wchar*);
+Object* find_object(Environment* envi, wchar*);
 Object* get_object(Object*);
-void add_object(Environment*, Object*);
+void add_object(Object*);
 
 struct Object
 {
