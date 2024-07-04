@@ -30,6 +30,7 @@ void* arena_realloc(Arena* arena, void* loc, size_t size)
     for(size_t i = 0; i < (size_t)*(dest - sizeof(size_t)); ++i)
     {
         *(dest + i) = *(ptr + i);
+        
     }
     return dest;
 }

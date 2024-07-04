@@ -56,6 +56,8 @@ Object* interpretate_atom(Expretion* expr)
             return interpretate_list(expr);
         case STRING_EXPR:
             return interpretate_str(expr);
+        case BINARY_EXPR:
+            return interpretate_bin(expr);
         default:
             wprintf(L"Ошибка интерпретации: неизвестный тип выражения: %d\n", expr->kind);
             EXIT;
@@ -71,9 +73,7 @@ Object* interpretate(Expretion* expr, Arena* arena)
 {
     //инициализация глобальных переменных
     ARENA = arena;
-    current_envi = arena_alloc(ARENA, sizeof(Environment));
-    current_envi->parent = NULL;
-    current_envi->variables = bm_vector_create(ARENA);
+    current_envi = create_empty_environment(NULL);
     Null_object = arena_alloc(ARENA, sizeof(Object*));
     Null_object->kind = EMPTY_OBJ;
 
@@ -83,6 +83,40 @@ Object* interpretate(Expretion* expr, Arena* arena)
         obj = interpretate_atom(bm_vector_at(expr->seque->expretions, i));
     }
     return obj;
+}
+
+Object* interpretate_bin(Expretion* expr)
+{
+    wchar* op = expr->binary->op;
+
+    Object* ret_obj = arena_alloc(ARENA, sizeof(Object));
+    Object* left = interpretate_atom(expr->binary->left);
+    Object* right = interpretate_atom(expr->binary->right);
+
+    if(wcscmp(op, L"=") == 0)
+    {
+        if(left->kind != VARIABLE_OBJ)
+        {
+            wprintf(L"Слева от оператора присвоения должна быть переменная!");
+            EXIT;
+        }
+        left->var->value = get_object(right);
+        return left;
+    }
+    left = get_object(left);
+    right = get_object(right);
+    if(wcscmp(op, L"+") == 0)
+    {
+        
+        if(left->kind != right->kind)
+        {
+            wprintf(L"выражение слева и справа разного типа");
+            EXIT;
+        }
+        ret_obj = find_object(current_envi, left->variable->name);
+        ret_obj->var->value = get_object(interpretate_atom(right));
+        return ret_obj;
+    }
 }
 
 /*
