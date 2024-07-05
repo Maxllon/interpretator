@@ -280,7 +280,7 @@ struct Expretion* parce_atom(void)
     return expr;
 }
 
-static op_priority operators[] = 
+op_priority operators[] = 
 {
     {L"=", 1},
 
@@ -289,11 +289,8 @@ static op_priority operators[] =
     {L"и", 3},
 
     {L"==", 4},
-    {L"<=", 4},
-    {L">=", 4},
     {L">", 4},
     {L"<", 4},
-    {L"!=", 4},
 
     {L"+", 5},
     {L"-", 5},

@@ -15,7 +15,8 @@ typedef enum
     INTEGER_OBJ,
     FLOAT_OBJ,
     STRING_OBJ,
-    BOOLEAN_OBJ,
+    TRUE_OBJECT,
+    FALSE_OBJECT,
     LIST_OBJ,
     EMPTY_OBJ
 }OBJECT_KIND;
@@ -43,7 +44,6 @@ struct Object
     {
         long long int_t;
         long double float_t;
-        uint8_t bool_t;
         wchar* str;
 
         bm_vector* list;

@@ -4,6 +4,8 @@
 static Arena* ARENA = NULL;
 static Environment* current_envi = NULL;
 static Object* Null_object = NULL;
+static Object* True_object = NULL;
+static Object* False_object = NULL;
 
 /*
 получает ссылку на родителя-пространство_имен и создает пустое пространство имен
@@ -77,6 +79,12 @@ Object* interpretate(Expretion* expr, Arena* arena)
     Null_object = arena_alloc(ARENA, sizeof(Object*));
     Null_object->kind = EMPTY_OBJ;
 
+    True_object = arena_alloc(ARENA, sizeof(Object*));
+    True_object->kind = TRUE_OBJECT;
+
+    False_object = arena_alloc(ARENA, sizeof(Object*));
+    False_object->kind = FALSE_OBJECT;
+
     Object* obj = NULL;
     for(size_t i = 0; i < expr->seque->expretions->len; ++i)
     {
@@ -85,6 +93,34 @@ Object* interpretate(Expretion* expr, Arena* arena)
     return obj;
 }
 
+static int is_number(Object* object)
+{
+    if(object->kind == INTEGER_OBJ || object->kind == FLOAT_OBJ) return 1;
+    return 0;
+}
+
+static Object* num_op(Object* left, Object* right, wchar* op)
+{
+    Object* ret_obj = arena_alloc(ARENA, sizeof(Object));
+    size_t prior = find_priority(op);
+    if(prior == 4)
+    {
+        if(wcscmp(op, L"=="))
+        {
+            if(left->kind == INTEGER_OBJ) ret_obj->bool_t = (left->int_t == right->int_t);
+            else ret_obj->bool_t = (left->float_t == right->float_t);
+        }
+        else if(wcscmp(op, ">"))
+        {
+            long double left_n, right_n;
+            if(left->kind == INTEGER_OBJ) left_n = (long double)left->int_t;
+            else left_n = left->float_t;
+        }
+    }
+    
+}
+
+//возвращает результат бинарной операции
 Object* interpretate_bin(Expretion* expr)
 {
     wchar* op = expr->binary->op;
@@ -105,18 +141,10 @@ Object* interpretate_bin(Expretion* expr)
     }
     left = get_object(left);
     right = get_object(right);
-    if(wcscmp(op, L"+") == 0)
-    {
-        
-        if(left->kind != right->kind)
-        {
-            wprintf(L"выражение слева и справа разного типа");
-            EXIT;
-        }
-        ret_obj = find_object(current_envi, left->variable->name);
-        ret_obj->var->value = get_object(interpretate_atom(right));
-        return ret_obj;
-    }
+    if(is_number(left) && is_number(right)) return num_op(left, right, op);
+
+    wprintf(L"выражение невозможно с оператором: %ls\n", op);
+    EXIT;
 }
 
 /*
