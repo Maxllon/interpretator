@@ -48,6 +48,7 @@ struct Object
     {
         long long int_t;
         long double float_t;
+        int bool_t;
         wchar* str;
 
         bm_vector* array;
@@ -87,7 +88,6 @@ Object* interpretate_var(Expretion*);
 Object* interpretate_num(Expretion*);
 Object* interpretate_str(Expretion*);
 Object* interpretate_bool(Expretion*);
-Object* interpretate_void(void);
 
 Object* interpretate_bin(Expretion*);
 

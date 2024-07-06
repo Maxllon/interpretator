@@ -4,6 +4,7 @@
 //глобальные переменные
 static Arena *ARENA = NULL;
 static Environment* current_envi = NULL;
+static Object* empty_object = NULL;
 
 Environment* create_empty_environment(Environment* parent)
 {
@@ -84,18 +85,23 @@ void add_variable(Environment* envi, Var_Obj* var)
     bm_vector_push(envi->variables, var);
 }
 
-void interpretate(Expretion* expr, Arena* arena)
+Object* interpretate(Expretion* expr, Arena* arena)
 {
     ARENA = arena;
 
     Environment* envi = create_empty_environment(NULL);
     current_envi = envi;
 
+    empty_object = arena_alloc(ARENA, sizeof(Object));
+    empty_object->kind = VOID_OBJ;
+
     
     for(size_t i = 0; i < expr->seque->expretions->len; ++i)
     {
        interpretate_atom((Expretion*)bm_vector_at(expr->seque->expretions, i));
     }
+
+    return NULL;
 }
 
 /*
@@ -107,6 +113,12 @@ Object* interpretate_atom(Expretion* expr)
     {
         case VARIABLE_EXPR:
             return interpretate_var(expr);
+        case NUMBER_EXPR:
+            return interpretate_num(expr);
+        case STRING_EXPR:
+            return interpretate_str(expr);
+        case VOID_EXPR:
+            return empty_object;
         default:
             wprintf(L"cant interpretate atom!\n");
             EXIT;
@@ -124,7 +136,55 @@ Object* interpretate_var(Expretion* expr)
     {
         Var_Obj* var = arena_alloc(ARENA, sizeof(Var_Obj));
         var->name = expr->variable->name;
-        var->value = NULL;
+        var->value = empty_object;
     }
+    return obj;
+}
+
+//возвращает объект int или float
+static size_t count(wchar* str, wchar symb)
+{
+    size_t c = 0;
+    while((str = wcschr(str, symb)) != NULL)
+    {
+        c++;
+        str++;
+    }
+    return c;
+}
+Object* interpretate_num(Expretion* expr)
+{
+    Object* obj = arena_alloc(ARENA, sizeof(Object));
+    wchar* end_ptr;
+    wchar* number = expr->number->value;
+    if(count(number, L'.'))
+    {
+        obj->kind = FLOAT_OBJ;
+        obj->float_t = wcstold(number, end_ptr);
+    }
+    else
+    {
+        obj->kind = INTEGER_OBJ;
+        obj->float_t = wcstoll(number, end_ptr, 10);
+    }
+    return obj;
+}
+
+//возвращает объект - строку
+Object* interpretate_str(Expretion* expr)
+{
+    Object* obj = arena_alloc(ARENA, sizeof(Object));
+    obj->kind = STRING_OBJ;
+    obj->str = expr->string->value;
+    return obj;
+}
+
+//возвращает объект логики
+Object* interpretate_bool(Expretion* expr)
+{
+    Object* obj = arena_alloc(ARENA, sizeof(Object));
+    obj->kind = BOOLEAN_OBJ;
+    if(wcscmp(expr->boolean->value, L"БЛЯДЬ") == 0) obj->bool_t = 0;
+    else obj->bool_t = 1;
     return obj;
 }
