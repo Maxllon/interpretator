@@ -18,5 +18,6 @@ struct bm_vector
 bm_vector* bm_vector_create(Arena*);
 void bm_vector_push(bm_vector*, void*);
 void* bm_vector_at(bm_vector*, size_t);
+void bm_vector_change(bm_vector*, size_t, void*);
 
 #endif

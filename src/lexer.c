@@ -36,13 +36,13 @@ void out_tk_list(tk_node *main)
     for (tk_node* token = main; token->kind != END; token = token->next)
     {
         wprintf(L"<%d>", i);
-        wprintf(L"Тип токена: %s\n", TOKEN_NAMES[token->kind]);
+        wprintf(L"Тип токена: %ls\n", TOKEN_NAMES[token->kind]);
         wprintf(L"Значение токена: %ls\n", token->value);
         wprintf(L"Позиция токена: %d %d\n\n", token->pos.x, token->pos.y);  
         ++i;
     }
     wprintf(L"<%d>", i);
-    wprintf(L"Тип токена: %s\n", TOKEN_NAMES[END]);
+    wprintf(L"Тип токена: %ls\n", TOKEN_NAMES[END]);
     wprintf(L"Значение токена: %ls\n", NULL);
     wprintf(L"Позиция токена: %d %d\n\n", -1, -1);  
     printf("\n\n\n");

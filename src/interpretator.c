@@ -14,6 +14,28 @@ Environment* create_empty_environment(Environment* parent)
     return envi;
 }
 
+//возвращает есть ли переменная в системе
+int is_def(Environment* envi, wchar* name)
+{
+    for (int i = 0; i < envi->variables->len; ++i) 
+    {
+        Var_Obj* var_obj = (Var_Obj*)bm_vector_at(envi->variables, i);
+        if (wcscmp(var_obj->name, name) == 0) 
+        {
+            return 1;
+        }
+    }
+    if (envi->parent != NULL) 
+    {
+        return is_def(envi->parent, name);
+    }
+    return 0;
+}
+
+/*
+ищет переменную в системе
+возвращает ссылку на ее значение
+*/
 Object* find_variable(Environment* envi, wchar_t* name) 
 {
     for (int i = 0; i < envi->variables->len; ++i) 
@@ -28,7 +50,27 @@ Object* find_variable(Environment* envi, wchar_t* name)
     {
         return find_variable(envi->parent, name);
     }
-    return NULL;
+    return empty_object;
+}
+
+//устанавливает переменной конкретный объект и возвращет его
+Object* set_variable(Environment* envi, wchar* name, Object* obj)
+{
+    for (int i = 0; i < envi->variables->len; ++i) 
+    {
+        Var_Obj* var_obj = (Var_Obj*)bm_vector_at(envi->variables, i);
+        if (wcscmp(var_obj->name, name) == 0) 
+        {
+            var_obj->value = obj;
+            bm_vector_change(envi->variables, i, var_obj);
+            return obj;
+        }
+    }
+    if (envi->parent != NULL) 
+    {
+        return set_variable(envi->parent, name, obj);
+    }
+    return empty_object;
 }
 
 // Копирование объекта
@@ -46,6 +88,9 @@ Object* copy_object(Object* obj) {
         case STRING_OBJ:
             new_obj->str = arena_alloc(ARENA, sizeof(wchar) * (wcslen(obj->str) + 1));
             wcscpy(new_obj->str, obj->str);
+            break;
+        case BOOLEAN_OBJ:
+            new_obj->bool_t = obj->bool_t;
             break;
         default:
             wprintf(L"Не могу копироовать обьект\n");
@@ -66,6 +111,8 @@ Object* get_object(Object* obj)
         case FLOAT_OBJ:
             return copy_object(obj);
         case STRING_OBJ:
+            return copy_object(obj);
+        case BOOLEAN_OBJ:
             return copy_object(obj);
         default:
             wprintf(L"Cant get object with this type: %d\n", obj->kind);
@@ -95,12 +142,13 @@ Object* interpretate(Expretion* expr, Arena* arena)
     empty_object = arena_alloc(ARENA, sizeof(Object));
     empty_object->kind = VOID_OBJ;
 
-    
+
     for(size_t i = 0; i < expr->seque->expretions->len; ++i)
     {
        interpretate_atom((Expretion*)bm_vector_at(expr->seque->expretions, i));
     }
-
+    wprintf(L"%lld\n", find_variable(envi, L"ж")->int_t);
+    wprintf(L"%Lf\n", find_variable(envi, L"г")->float_t);
     return NULL;
 }
 
@@ -119,6 +167,10 @@ Object* interpretate_atom(Expretion* expr)
             return interpretate_str(expr);
         case VOID_EXPR:
             return empty_object;
+        case BOOLEAN_EXPR:
+            return interpretate_bool(expr);
+        case BINARY_EXPR:
+            return interpretate_bin(expr);
         default:
             wprintf(L"cant interpretate atom!\n");
             EXIT;
@@ -131,13 +183,16 @@ Object* interpretate_atom(Expretion* expr)
 */
 Object* interpretate_var(Expretion* expr)
 {
+    wchar* name = expr->variable->name;
     Object* obj = find_variable(current_envi, expr->variable->name);
-    if(obj == NULL)
+    if(!is_def(current_envi, name))
     {
         Var_Obj* var = arena_alloc(ARENA, sizeof(Var_Obj));
         var->name = expr->variable->name;
         var->value = empty_object;
+        add_variable(current_envi, var);
     }
+    
     return obj;
 }
 
@@ -160,12 +215,12 @@ Object* interpretate_num(Expretion* expr)
     if(count(number, L'.'))
     {
         obj->kind = FLOAT_OBJ;
-        obj->float_t = wcstold(number, end_ptr);
+        obj->float_t = wcstold(number, &end_ptr);
     }
     else
     {
         obj->kind = INTEGER_OBJ;
-        obj->float_t = wcstoll(number, end_ptr, 10);
+        obj->int_t = wcstoll(number, &end_ptr, 10);
     }
     return obj;
 }
@@ -187,4 +242,22 @@ Object* interpretate_bool(Expretion* expr)
     if(wcscmp(expr->boolean->value, L"БЛЯДЬ") == 0) obj->bool_t = 0;
     else obj->bool_t = 1;
     return obj;
+}
+
+Object* interpretate_bin(Expretion* expr)
+{
+    Object* left = interpretate_atom(expr->binary->left);
+    Object* right = interpretate_atom(expr->binary->right);
+    wchar* op = expr->binary->op;
+    if(wcscmp(op, L"=") == 0)
+    {
+        if(expr->binary->left->kind != VARIABLE_EXPR)
+        {
+            wprintf(L"Слева от оператора присвоения должно находиться имя переменной!\n");
+            EXIT;
+        }
+        return set_variable(current_envi, expr->binary->left->variable->name, get_object(right));
+    }
+    wprintf(L"Неизвестный оператор: %ls\n", op);
+    EXIT;
 }

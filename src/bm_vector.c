@@ -32,4 +32,15 @@ void* bm_vector_at(bm_vector* vec, size_t index)
     }
     return vec->data[index];
 }
+void bm_vector_change(bm_vector* vec, size_t index, void* item)
+{
+    if(vec->len < index)
+    {
+        wprintf(L"Ошибка: индекс элемента за пределами последовательности!!!\n");
+        arena_destroy(vec->arena);
+        system("pause");
+        exit(1);
+    }
+    vec->data[index] = item;
+}
 

@@ -16,7 +16,7 @@ $(EXECUTABLE): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $@
 
 $(OBJ)/%.o: $(SRC)/%.c | $(OBJ)
-	$(CC) $(CFLAGS) -I$(INCLUDE) -c $< -o $@
+	$(CC) $(CFLAGS) -I$(INCLUDE) -c $< -D__USE_MINGW_ANSI_STDIO -o $@
 
 $(OBJ):
 	mkdir $@

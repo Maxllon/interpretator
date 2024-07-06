@@ -75,7 +75,9 @@ struct Func_Obj
 Environment* create_empty_environment(Environment*);
 
 //функции работы с переменными
+int is_def(Environment*, wchar*);
 Object* find_variable(Environment*, wchar*);
+Object* set_variable(Environment*, wchar*, Object*);
 Object* copy_object(Object*);
 Object* get_object(Object*);
 void add_variable(Environment*, Var_Obj*);
