@@ -10,15 +10,22 @@ typedef struct Expretion Expretion;
 
 typedef enum
 {
-    VARIABLE_OBJ = 0,
-    FUNCTION_OBJ,
+    FUNC_OBJ = 0,
+    CALL_OBJ,
+    IF_OBJ,
+
     INTEGER_OBJ,
     FLOAT_OBJ,
     STRING_OBJ,
-    TRUE_OBJECT,
-    FALSE_OBJECT,
-    LIST_OBJ,
-    EMPTY_OBJ
+    BOOLEAN_OBJ,
+
+    BINARY_OBJ,
+    ARRAY_OBJ,
+    INDEX_OBJ,
+
+    VOID_OBJ,
+    BREAK_OBJ,
+    RETURN_OBJ
 }OBJECT_KIND;
 
 typedef struct Object Object;
@@ -33,9 +40,6 @@ struct Environment
     bm_vector* variables;
     Environment* parent;
 };
-Object* find_object(Environment* envi, wchar*);
-Object* get_object(Object*);
-void add_object(Object*);
 
 struct Object
 {
@@ -46,9 +50,8 @@ struct Object
         long double float_t;
         wchar* str;
 
-        bm_vector* list;
+        bm_vector* array;
         Func_Obj* func;
-        Var_Obj* var;
     };
     
 };
@@ -65,24 +68,37 @@ struct Func_Obj
     Expretion* expr;
 };
 
+/*
+все функции интерпретатора, расположенные в порядке их создания
+*/
 Environment* create_empty_environment(Environment*);
 
-Object* interpretate_var(Expretion*);//
-Object* interpretate_bin(Expretion*);
-Object* interpretate_num(Expretion*);//
-Object* interpretate_atom(Expretion*);
-Object* interpretate_str(Expretion*);//
-Object* interpretate_bool(Expretion*);//
-Object* interpretate_list(Expretion*);//
-Object* interpretate_void(void);//
-Object* interpretate_call(Expretion*);
-Object* interpretate_func(Expretion*);
-Object* interpretate_while(Expretion*);
-Object* interpretate_foreach(Expretion*);
-Object* interpretate_if(Expretion*);
-
+//функции работы с переменными
+Object* find_variable(Environment*, wchar*);
+Object* copy_object(Object*);
+Object* get_object(Object*);
+void add_variable(Environment*, Var_Obj*);
 
 Object* interpretate(Expretion*, Arena*);
+
+Object* interpretate_atom(Expretion*);
+
+Object* interpretate_var(Expretion*);
+Object* interpretate_num(Expretion*);
+Object* interpretate_str(Expretion*);
+Object* interpretate_bool(Expretion*);
+Object* interpretate_void(void);
+
+Object* interpretate_bin(Expretion*);
+
+Object* interpretate_list(Expretion*);
+Object* interpretate_call(Expretion*);
+Object* interpretate_func(Expretion*);
+Object* interpretate_return(void);
+Object* interpretate_while(Expretion*);
+Object* interpretate_foreach(Expretion*);
+Object* interpretate_break(void);
+Object* interpretate_if(Expretion*);
 
 
 
