@@ -147,8 +147,7 @@ Object* interpretate(Expretion* expr, Arena* arena)
     {
        interpretate_atom((Expretion*)bm_vector_at(expr->seque->expretions, i));
     }
-    wprintf(L"%lld\n", find_variable(envi, L"ж")->int_t);
-    wprintf(L"%Lf\n", find_variable(envi, L"г")->float_t);
+    wprintf(L"%lld\n", find_variable(envi, L"а")->int_t);
     return NULL;
 }
 
@@ -244,6 +243,56 @@ Object* interpretate_bool(Expretion* expr)
     return obj;
 }
 
+
+static Object* number_operators(Object* left, Object* right, wchar* op)
+{
+    Object* result = arena_alloc(ARENA, sizeof(Object));
+    
+    if(left->kind == FLOAT_OBJ || right->kind == FLOAT_OBJ) result->kind = FLOAT_OBJ;
+    else result->kind = INTEGER_OBJ;
+    
+    if(result->kind != FLOAT_OBJ)
+    {
+        if(wcscmp(op, L"+") == 0)
+        {
+            result->int_t = left->int_t + right->int_t;
+            return result;
+        }
+        if(wcscmp(op, L"-") == 0)
+        {
+            result->int_t = left->int_t + right->int_t;
+            return result;
+        }
+        if(wcscmp(op, L"*") == 0)
+        {
+            result->int_t = left->int_t * right->int_t;
+            return result;
+        }
+        if(wcscmp(op, L"/") == 0)
+        {
+            result->kind = FLOAT_OBJ;
+            result->float_t= (long double)left->int_t / (long double)right->int_t;
+            return result;
+        }
+        if(wcscmp(op, L"^") == 0)
+        {
+            result->int_t = powl((long double) left->int_t, (long double) right->int_t);
+            return result;
+        }
+        if(wcscmp(op, L"\%") == 0)
+        {
+            result->int_t = left->int_t % right->int_t;
+            return result;
+        }
+        if(wcscmp(op, L"//") == 0)
+        {
+            result->int_t =  left->int_t / right->int_t;
+            return result;
+        }
+    }
+    return NULL;
+}
+
 Object* interpretate_bin(Expretion* expr)
 {
     Object* left = interpretate_atom(expr->binary->left);
@@ -258,6 +307,9 @@ Object* interpretate_bin(Expretion* expr)
         }
         return set_variable(current_envi, expr->binary->left->variable->name, get_object(right));
     }
+    if((left->kind == FLOAT_OBJ || left->kind == INTEGER_OBJ) && (right->kind == FLOAT_OBJ || right->kind == INTEGER_OBJ)) return number_operators(left, right, op);
+
+
     wprintf(L"Неизвестный оператор: %ls\n", op);
     EXIT;
 }

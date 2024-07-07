@@ -283,7 +283,7 @@ struct Expretion* parce_atom(void)
 op_priority operators[] = 
 {
     {L"=", 1},
-
+    
     {L"або", 2},
 
     {L"и", 3},
@@ -307,7 +307,7 @@ size_t find_priority(const wchar* op)
 {
     for(size_t i = 0; i < sizeof(operators)/sizeof(op_priority); ++i)
     {
-        if(wcscmp(op, operators[i].operator)) return operators[i].priority;
+        if(wcscmp(op, operators[i].operator) == 0) return operators[i].priority;
     }
     wprintf(L"Cant find this op: %ls\n", op);
     EXIT;

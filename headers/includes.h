@@ -9,6 +9,7 @@
 #include<string.h>
 #include<locale.h>
 #include<errno.h>
+#include<math.h>
 
 //constants
 #define wchar wchar_t
