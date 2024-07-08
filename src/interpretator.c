@@ -251,7 +251,7 @@ static Object* number_operators(Object* left, Object* right, wchar* op)
     if(left->kind == FLOAT_OBJ || right->kind == FLOAT_OBJ) result->kind = FLOAT_OBJ;
     else result->kind = INTEGER_OBJ;
     
-    if(result->kind != FLOAT_OBJ)
+    if(result->kind == INTEGER_OBJ)
     {
         if(wcscmp(op, L"+") == 0)
         {
@@ -290,6 +290,66 @@ static Object* number_operators(Object* left, Object* right, wchar* op)
             return result;
         }
     }
+    if(result->kind == FLOAT_OBJ)
+    {
+        if(wcscmp(op, L"+") == 0)
+        {
+            result->float_t = 
+            (left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t)
+            +
+            (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t);
+            return result;
+        }
+        if(wcscmp(op, L"-") == 0)
+        {
+            result->float_t = 
+            (left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t)
+            -
+            (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t);
+            return result;
+        }
+        if(wcscmp(op, L"*") == 0)
+        {
+            result->float_t = 
+            (left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t)
+            *
+            (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t);
+            return result;
+        }
+        if(wcscmp(op, L"/") == 0)
+        {
+            result->float_t = 
+            (left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t)
+            /
+            (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t);
+            return result;
+        }
+        if(wcscmp(op, L"^") == 0)
+        {
+            result->float_t = powl(
+                (left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t),
+                (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t));
+            return result;
+        }
+        if(wcscmp(op, L"\%") == 0)
+        {
+            result->float_t = fmodl(
+                (left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t),
+                (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t));
+            return result;
+        }
+        if(wcscmp(op, L"//") == 0)
+        {
+            result->kind = INTEGER_OBJ;
+            result->int_t = (long long)
+            ((left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t)
+            /
+            (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t));
+            return result;
+        }
+    }
+    wprintf(L"Неподходящий оператор для работы с числами!\n");
+    EXIT;
     return NULL;
 }
 
