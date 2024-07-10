@@ -93,6 +93,8 @@ Object* interpretate_bool(Expretion*);
 
 Object* interpretate_bin(Expretion*);
 
+Object* interpretate_denial(Expretion* expr);
+Object* interpretate_index(Expretion*);
 Object* interpretate_list(Expretion*);
 Object* interpretate_call(Expretion*);
 Object* interpretate_func(Expretion*);

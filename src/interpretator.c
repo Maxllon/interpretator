@@ -147,7 +147,7 @@ Object* interpretate(Expretion* expr, Arena* arena)
     {
        interpretate_atom((Expretion*)bm_vector_at(expr->seque->expretions, i));
     }
-    wprintf(L"%lld\n", find_variable(envi, L"а")->int_t);
+    wprintf(L"%lld\n", find_variable(envi, L"а")->bool_t);
     return NULL;
 }
 
@@ -459,7 +459,7 @@ static Object* boolean_operators(Object* left, Object* right, wchar* op)
     }
     if(wcscmp(op, L"!=") == 0)
     {
-        result->bool_t = left->bool_t == right->bool_t;
+        result->bool_t = left->bool_t != right->bool_t;
         return result;
     }
     if(wcscmp(op, L"и") == 0)
