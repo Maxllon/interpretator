@@ -28,7 +28,8 @@ typedef enum
     FOREACH_EXPR,
 
     BREAK_EXPR,
-    RETURN_EXPR
+    RETURN_EXPR,
+    DENIAL_EXPR
 
 }expr_kind;
 
@@ -49,6 +50,7 @@ struct Index;
 struct Return;
 struct While;
 struct Foreach;
+struct Denial;
 
 struct Expretion
 {
@@ -70,6 +72,7 @@ struct Expretion
         struct Return* return_t;
         struct While* while_t;
         struct Foreach* foreach;
+        struct Denial* denial;
     };
 };
 struct Seque
@@ -163,6 +166,10 @@ struct Foreach
     struct Expretion* body;
 };
 
+struct Denial
+{
+    struct Expretion* expr;
+};
 
 //create expr functions
 struct Expretion* create_empty_expr(expr_kind);
@@ -181,6 +188,7 @@ struct Index* create_empty_index(void);
 struct Return* create_empty_return(void);
 struct While* create_empty_while(void);
 struct Foreach* create_empty_foreach(void);
+struct Denial* create_empty_denial(void);
 
 
 typedef struct 
@@ -205,6 +213,7 @@ struct Expretion* parce_return(void);
 struct Expretion* parce_while(void);
 struct Expretion* parce_foreach(void);
 struct Expretion* parce_array(void);
+struct Expretion* parce_denial(void);
 
 //output functions
 void out_expretion(struct Expretion*, size_t);
@@ -225,5 +234,6 @@ void out_while(struct While*, size_t);
 void out_foreach(struct Foreach*, size_t);
 void out_array(struct Array*, size_t);
 void out_break(size_t);
+void out_denial(struct Denial*, size_t);
 
 #endif

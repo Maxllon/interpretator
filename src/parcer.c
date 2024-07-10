@@ -58,6 +58,9 @@ struct Expretion *create_empty_expr(expr_kind kind)
     case FOREACH_EXPR:
         expr->foreach = create_empty_foreach();
         break;
+    case DENIAL_EXPR:
+        expr->denial = create_empty_denial();
+        break;
     default:
         wprintf(L"Ошибка: некорректный тип выражения <%d><%d>\n", tk_list->pos.x, tk_list->pos.y);
         EXIT;
@@ -181,6 +184,13 @@ struct Foreach* create_empty_foreach(void)
     return foreach;
 }
 
+struct Denial* create_empty_denial(void)
+{
+    struct Denial* den = arena_alloc(ARENA, sizeof(struct Denial));
+    den->expr = NULL;
+    return den;
+}
+
 int skip(wchar *str)
 {
     if(tk_list->kind == END)
@@ -256,6 +266,7 @@ struct Expretion* parce_atom(void)
                 tk_list = tk_list->next;
                 return create_empty_expr(BREAK_EXPR);
             }
+            if(wcscmp(tk_list->value, L"не") == 0) return parce_denial();
             break;
         case NUMBER:
             expr = create_empty_expr(NUMBER_EXPR);
@@ -388,6 +399,9 @@ void out_expretion(struct Expretion* expr, size_t indent)
             break;
         case ARRAY_EXPR:
             out_array(expr->array, indent);
+            break;
+        case DENIAL_EXPR:
+            out_denial(expr->denial, indent);
             break;
         default:
             wprintf(L"Ошибка: некорректный тип выражения\n");
@@ -528,6 +542,14 @@ struct Expretion* parce_array(void)
         if(wcscmp(tk_list->value, L"}") != 0) skip(L",");
     }
     skip(L"}");
+    return expr;
+}
+
+struct Expretion* parce_denial(void)
+{
+    tk_list = tk_list->next;
+    struct Expretion* expr = create_empty_expr(DENIAL_EXPR);
+    expr->denial->expr = parce_expr();
     return expr;
 }
 
@@ -848,4 +870,20 @@ void out_break(size_t indent)
     *(str+indent) = L'\0';
 
     wprintf(L"%lsТип: выход из цикла\n", str);
+}
+
+void out_denial(struct Denial* denial, size_t indent)
+{
+    wchar* str = arena_alloc(ARENA, 2*indent+2);
+    for(size_t i = 0; i < indent; ++i)
+    {
+        *(str+i) = L' ';
+    }
+    *(str+indent) = L'\0';
+
+    wprintf(L"%lsТип: отрицание\n", str);
+    wprintf(L"%lsВыражение:\n", str);
+    wprintf(L"%ls{\n", str);
+    out_expretion(denial->expr, indent+INDENT);
+    wprintf(L"%ls}\n", str);
 }

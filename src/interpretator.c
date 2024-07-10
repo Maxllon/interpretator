@@ -289,6 +289,45 @@ static Object* number_operators(Object* left, Object* right, wchar* op)
             result->int_t =  left->int_t / right->int_t;
             return result;
         }
+
+        //логические
+        if(wcscmp(op, L"==") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = left->int_t == right->int_t;
+            return result;
+        }
+        if(wcscmp(op, L"!=") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = left->int_t != right->int_t;
+            return result;
+        }
+        if(wcscmp(op, L">=") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = left->int_t >= right->int_t;
+            return result;
+        }
+        if(wcscmp(op, L"<=") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = left->int_t <= right->int_t;
+            return result;
+        }
+        if(wcscmp(op, L">") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = left->int_t > right->int_t;
+            return result;
+        }
+        if(wcscmp(op, L"<") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = left->int_t < right->int_t;
+            return result;
+        }
+
     }
     if(result->kind == FLOAT_OBJ)
     {
@@ -347,7 +386,93 @@ static Object* number_operators(Object* left, Object* right, wchar* op)
             (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t));
             return result;
         }
+
+        //логические
+        if(wcscmp(op, L"==") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = 
+            (left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t) 
+            ==
+            (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t);
+            return result;
+        }
+        if(wcscmp(op, L"!=") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = 
+            (left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t) 
+            !=
+            (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t);
+            return result;
+        }
+        if(wcscmp(op, L">=") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = 
+            (left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t) 
+            >=
+            (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t);
+            return result;
+        }
+        if(wcscmp(op, L"<=") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = 
+            (left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t) 
+            <=
+            (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t);
+            return result;
+        }
+        if(wcscmp(op, L">") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = 
+            (left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t) 
+            >
+            (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t);
+            return result;
+        }
+        if(wcscmp(op, L"<") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = 
+            (left->kind == INTEGER_OBJ ? (long double)left->int_t : left->float_t) 
+            <
+            (right->kind == INTEGER_OBJ ? (long double)right->int_t : right->float_t);
+            return result;
+        }
     }
+    wprintf(L"Неподходящий оператор для работы с числами!\n");
+    EXIT;
+    return NULL;
+}
+
+static Object* boolean_operators(Object* left, Object* right, wchar* op)
+{
+    Object* result = arena_alloc(ARENA, sizeof(Object));
+    result->kind = BOOLEAN_OBJ;
+    if(wcscmp(op, L"==") == 0)
+    {
+        result->bool_t = left->bool_t == right->bool_t;
+        return result;
+    }
+    if(wcscmp(op, L"!=") == 0)
+    {
+        result->bool_t = left->bool_t == right->bool_t;
+        return result;
+    }
+    if(wcscmp(op, L"и") == 0)
+    {
+        result->bool_t = left->bool_t && right->bool_t;
+        return result;
+    }
+    if(wcscmp(op, L"або") == 0)
+    {
+        result->bool_t = left->bool_t || right->bool_t ? 1 : 0;
+        return result;
+    }
+
     wprintf(L"Неподходящий оператор для работы с числами!\n");
     EXIT;
     return NULL;
@@ -368,6 +493,15 @@ Object* interpretate_bin(Expretion* expr)
         return set_variable(current_envi, expr->binary->left->variable->name, get_object(right));
     }
     if((left->kind == FLOAT_OBJ || left->kind == INTEGER_OBJ) && (right->kind == FLOAT_OBJ || right->kind == INTEGER_OBJ)) return number_operators(left, right, op);
+    if(left->kind == BOOLEAN_OBJ && right->kind == BOOLEAN_OBJ) return boolean_operators(left, right, op);
+
+    if(wcscmp(op, L"==") == 0 && left->kind != right->kind)
+    {
+        Object* obj = arena_alloc(ARENA, sizeof(Object));
+        obj->kind = BOOLEAN_OBJ;
+        obj->bool_t = 0;
+        return obj;
+    }
 
 
     wprintf(L"Неизвестный оператор: %ls\n", op);
