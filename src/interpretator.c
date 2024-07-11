@@ -147,7 +147,7 @@ Object* interpretate(Expretion* expr, Arena* arena)
     {
        interpretate_atom((Expretion*)bm_vector_at(expr->seque->expretions, i));
     }
-    wprintf(L"%lld\n", find_variable(envi, L"а")->bool_t);
+    wprintf(L"%ls\n", find_variable(envi, L"ж")->str);
     return NULL;
 }
 
@@ -478,6 +478,57 @@ static Object* boolean_operators(Object* left, Object* right, wchar* op)
     return NULL;
 }
 
+static Object* string_operators(Object* left, Object* right, wchar* op)
+{
+    Object* result = arena_alloc(ARENA, sizeof(Object));
+    if(left->kind == STRING_OBJ && right->kind == STRING_OBJ)
+    {
+        if(wcscmp(op, L"==") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = wcscmp(left->str, right->str) == 0 ? 1 : 0;
+            return result;
+        }
+        if(wcscmp(op, L"!=") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = wcscmp(left->str, right->str) == 0 ? 0 : 1;
+            return result;
+        }
+        if(wcscmp(op, L"+") == 0)
+        {
+            result->kind = STRING_OBJ;
+            result->str = arena_alloc(ARENA, sizeof(wchar) * (wcslen(left->str) + wcslen(right->str) + 1));
+            wcscpy(result->str, left->str);
+            wcscat(result->str, right->str);
+            return result;
+            
+        }
+    }
+    if(left->kind == INTEGER_OBJ || right->kind == INTEGER_OBJ)
+    {
+        result->kind = STRING_OBJ;
+        if(left->kind == INTEGER_OBJ)
+        {
+            Object* temp = left;
+            left = right;
+            right = temp;
+        }
+        if(wcscmp(op, L"*") == 0)
+        {
+            result->str = arena_alloc(ARENA, sizeof(wchar) * ((wcslen(left->str) * right->int_t) + 1));
+            for(size_t i = 0; i < right->int_t; ++i)
+            {
+                wcscat(result->str, left->str);
+            }
+            return result;
+        }
+    }
+    wprintf(L"Неподходящий оператор для работы с строками!\n");
+    EXIT;
+    return NULL;
+}
+
 Object* interpretate_bin(Expretion* expr)
 {
     Object* left = interpretate_atom(expr->binary->left);
@@ -494,6 +545,7 @@ Object* interpretate_bin(Expretion* expr)
     }
     if((left->kind == FLOAT_OBJ || left->kind == INTEGER_OBJ) && (right->kind == FLOAT_OBJ || right->kind == INTEGER_OBJ)) return number_operators(left, right, op);
     if(left->kind == BOOLEAN_OBJ && right->kind == BOOLEAN_OBJ) return boolean_operators(left, right, op);
+    if(left->kind == STRING_OBJ || right->kind == STRING_OBJ) return string_operators(left, right, op);
 
     if(wcscmp(op, L"==") == 0 && left->kind != right->kind)
     {
