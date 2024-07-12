@@ -15,8 +15,9 @@ void* arena_alloc(Arena* arena, size_t size)
     size+=sizeof(size_t);
     if(arena->size - arena->index < size)
     {
-        arena->region = realloc(arena->region, arena->size + ARENA_BLOCK_SIZE);
-        arena->size += ARENA_BLOCK_SIZE;
+        size_t add_data = ARENA_BLOCK_SIZE + (size - (arena->size - arena->index));
+        arena->region = realloc(arena->region, arena->size + add_data);
+        arena->size += + add_data;
     }
     arena->index += size;
     *(arena->region + arena->index - size) = size -sizeof(size_t);

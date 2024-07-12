@@ -16,7 +16,7 @@
 #define EXPAN ".txt"
 #define INDENT 4
 #define TOKEN_NAME_BUFFER 100
-#define ARENA_BLOCK_SIZE 1024
+#define ARENA_BLOCK_SIZE 10000
 
 typedef int Errno;
 

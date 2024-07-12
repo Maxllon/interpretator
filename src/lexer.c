@@ -90,7 +90,8 @@ tk_node* lexing(wchar* file, Arena* arena)
     pos.y = 0;
     wchar* str;
     wchar sym;
-    for(size_t i = 0; i < wcslen(file); ++i)
+    size_t f_len = wcslen(file);
+    for(size_t i = 0; i < f_len; ++i)
     {
         sym = *(file+i);
         if(wcschr(SPEC, sym) != NULL)
@@ -109,7 +110,11 @@ tk_node* lexing(wchar* file, Arena* arena)
         else if(wcschr(BIN_OP, sym) != NULL)
         {
             emp_str(str);
-            push_node(symbols, new_node(BINARY, str, pos));
+            if(sym == L'-' && wcschr(DIGITS, *(file+i+1)) != NULL && i < f_len - 1 && (wcschr(DIGITS, *(file+i-1)) == NULL || i == 0))
+            {
+                push_node(symbols, new_node(DIGIT, str, pos));
+            }
+            else push_node(symbols, new_node(BINARY, str, pos));
         }
         else if(wcschr(DIGITS, sym) != NULL)
         {

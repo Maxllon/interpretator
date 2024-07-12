@@ -514,13 +514,25 @@ static Object* string_operators(Object* left, Object* right, wchar* op)
             left = right;
             right = temp;
         }
+        if(right->int_t < 0)
+        {
+            wprintf(L"Нельзя умножить строку на число, которое меньше нуля!!\n");
+            EXIT;
+        }
         if(wcscmp(op, L"*") == 0)
         {
+            size_t len = wcslen(left->str);
             result->str = arena_alloc(ARENA, sizeof(wchar) * ((wcslen(left->str) * right->int_t) + 1));
-            for(size_t i = 0; i < right->int_t; ++i)
+            size_t i,j;
+            size_t index = 0;
+            for(i = 0; i < right->int_t; ++i)
             {
-                wcscat(result->str, left->str);
+                for(j=0;j<len;++j)
+                {
+                    *(result->str + index++) = *(left->str + j);
+                }
             }
+            *(result->str + index) = L'\0';
             return result;
         }
     }

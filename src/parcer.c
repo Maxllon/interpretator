@@ -323,7 +323,7 @@ size_t find_priority(const wchar* op)
     {
         if(wcscmp(op, operators[i].operator) == 0) return operators[i].priority;
     }
-    wprintf(L"Cant find this op: %ls\n", op);
+    wprintf(L"Ошибка: Неизвестный оператор: %ls\n", op);
     EXIT;
 }
 
