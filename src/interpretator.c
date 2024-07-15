@@ -114,6 +114,8 @@ Object* get_object(Object* obj)
             return copy_object(obj);
         case BOOLEAN_OBJ:
             return copy_object(obj);
+        case ARRAY_OBJ:
+            return obj;
         default:
             wprintf(L"Cant get object with this type: %d\n", obj->kind);
             EXIT;
@@ -170,6 +172,10 @@ Object* interpretate_atom(Expretion* expr)
             return interpretate_bool(expr);
         case BINARY_EXPR:
             return interpretate_bin(expr);
+        case ARRAY_EXPR:    
+            return interpretate_list(expr);
+        case INDEX_EXPR:
+            return interpretate_index(expr);
         default:
             wprintf(L"cant interpretate atom!\n");
             EXIT;
@@ -570,4 +576,57 @@ Object* interpretate_bin(Expretion* expr)
 
     wprintf(L"Неизвестный оператор: %ls\n", op);
     EXIT;
+}
+
+Object* interpretate_index(Expretion* expr)
+{
+    Object* ret;
+    Object* dest = get_object(interpretate_atom(expr->index->destination));
+    Object* index = get_object(interpretate_atom(expr->index->index));
+    if(index->kind != INTEGER_OBJ)
+    {
+        wprintf(L"Ошибка: обращение к элементам списка возможно только по целочисленному ключу.\n");
+        EXIT;
+    }
+    if(dest->kind != ARRAY_OBJ && dest->kind != STRING_OBJ)
+    {
+        wprintf(L"Ошибка: Нельзя обращаться по индексу к этому типу данных.\n");
+        EXIT;
+    }
+    if(dest->kind == STRING_OBJ)
+    {
+        if(index->int_t < 0) index->int_t = wcslen(dest->str) + index->int_t;
+        if(index->int_t > wcslen(dest->str) - 1 || index->int_t < 0)
+        {
+            wprintf(L"Ошибка: индекс за пределами списка!\n");
+            EXIT;
+        }
+        ret = arena_alloc(ARENA, sizeof(Object));
+        ret->kind = STRING_OBJ;
+        ret->str = arena_alloc(ARENA, sizeof(wchar) * (2));
+        *(ret->str) = *(dest->str + index->int_t);
+        return ret;
+    }
+    if(dest->kind == ARRAY_OBJ)
+    {
+        if(index->int_t < 0) index->int_t = dest->array->len + index->int_t;
+        if(index->int_t > dest->array->len - 1 || index->int_t < 0)
+        {
+            wprintf(L"Ошибка: индекс за пределами списка!\n");
+            EXIT;
+        }
+        return get_object((Object*)bm_vector_at(dest->array, index->int_t));
+    }
+    return NULL;
+}
+Object* interpretate_list(Expretion* expr)
+{
+    Object* object = arena_alloc(ARENA, sizeof(Object));
+    object->kind = ARRAY_OBJ;
+    object->array = bm_vector_create(ARENA);
+    for(size_t i = 0; i < expr->array->expretions->len; ++i)
+    {
+        bm_vector_push(object->array, get_object(interpretate_atom(bm_vector_at(expr->array->expretions, i))));
+    }
+    return object;
 }

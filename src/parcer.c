@@ -650,14 +650,14 @@ void out_index(struct Index* index, size_t indent)
     wprintf(L"%lsТип: доступ к элементу\n", str);
 
     wprintf(L"%lsОткуда:\n", str);
-    wprintf(L"%ls{:\n", str);
+    wprintf(L"%ls{\n", str);
     out_expretion(index->destination, indent+INDENT);
-    wprintf(L"%ls{:\n", str);
+    wprintf(L"%ls{\n", str);
 
     wprintf(L"%lsИндекс:\n", str);
-    wprintf(L"%ls{:\n", str);
+    wprintf(L"%ls{\n", str);
     out_expretion(index->index, indent+INDENT);
-    wprintf(L"%ls{:\n", str);
+    wprintf(L"%ls{\n", str);
 
 }
 
