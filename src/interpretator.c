@@ -547,6 +547,14 @@ static Object* string_operators(Object* left, Object* right, wchar* op)
     return NULL;
 }
 
+static Object* array_operators(Object* left, Object* right, wchar* op)
+{
+    wprintf(L"Неподходящий оператор для работы с массивами\n");
+    EXIT;
+    return NULL;
+}
+
+
 Object* interpretate_bin(Expretion* expr)
 {
     Object* left = interpretate_atom(expr->binary->left);
@@ -564,6 +572,7 @@ Object* interpretate_bin(Expretion* expr)
     if((left->kind == FLOAT_OBJ || left->kind == INTEGER_OBJ) && (right->kind == FLOAT_OBJ || right->kind == INTEGER_OBJ)) return number_operators(left, right, op);
     if(left->kind == BOOLEAN_OBJ && right->kind == BOOLEAN_OBJ) return boolean_operators(left, right, op);
     if(left->kind == STRING_OBJ || right->kind == STRING_OBJ) return string_operators(left, right, op);
+    if(left->kind == ARRAY_OBJ || right->kind == ARRAY_OBJ) return array_operators(left, right, op);
 
     if(wcscmp(op, L"==") == 0 && left->kind != right->kind)
     {
