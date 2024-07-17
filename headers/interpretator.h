@@ -44,6 +44,7 @@ struct Environment
 struct Object
 {
     OBJECT_KIND kind;
+    int is_lvalue;
     union obj
     {
         long long int_t;

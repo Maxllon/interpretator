@@ -77,6 +77,7 @@ Object* set_variable(Environment* envi, wchar* name, Object* obj)
 Object* copy_object(Object* obj) {
     Object* new_obj = arena_alloc(ARENA, sizeof(Object));
     new_obj->kind = obj->kind;
+    new_obj->is_lvalue = 0;
     
     switch(obj->kind) {
         case INTEGER_OBJ:
@@ -143,6 +144,7 @@ Object* interpretate(Expretion* expr, Arena* arena)
 
     empty_object = arena_alloc(ARENA, sizeof(Object));
     empty_object->kind = VOID_OBJ;
+    empty_object->is_lvalue = 0;
 
 
     for(size_t i = 0; i < expr->seque->expretions->len; ++i)
@@ -161,7 +163,9 @@ Object* interpretate_atom(Expretion* expr)
     switch(expr->kind)
     {
         case VARIABLE_EXPR:
-            return interpretate_var(expr);
+            Object* ret = interpretate_var(expr);
+            ret->is_lvalue = 1;
+            return ret;
         case NUMBER_EXPR:
             return interpretate_num(expr);
         case STRING_EXPR:
@@ -215,6 +219,7 @@ static size_t count(wchar* str, wchar symb)
 Object* interpretate_num(Expretion* expr)
 {
     Object* obj = arena_alloc(ARENA, sizeof(Object));
+    obj->is_lvalue = 0;
     wchar* end_ptr;
     wchar* number = expr->number->value;
     if(count(number, L'.'))
@@ -234,6 +239,7 @@ Object* interpretate_num(Expretion* expr)
 Object* interpretate_str(Expretion* expr)
 {
     Object* obj = arena_alloc(ARENA, sizeof(Object));
+    obj->is_lvalue = 0;
     obj->kind = STRING_OBJ;
     obj->str = expr->string->value;
     return obj;
@@ -243,6 +249,7 @@ Object* interpretate_str(Expretion* expr)
 Object* interpretate_bool(Expretion* expr)
 {
     Object* obj = arena_alloc(ARENA, sizeof(Object));
+    obj->is_lvalue = 0;
     obj->kind = BOOLEAN_OBJ;
     if(wcscmp(expr->boolean->value, L"БЛЯДЬ") == 0) obj->bool_t = 0;
     else obj->bool_t = 1;
@@ -253,6 +260,7 @@ Object* interpretate_bool(Expretion* expr)
 static Object* number_operators(Object* left, Object* right, wchar* op)
 {
     Object* result = arena_alloc(ARENA, sizeof(Object));
+    result->is_lvalue = 0;
     
     if(left->kind == FLOAT_OBJ || right->kind == FLOAT_OBJ) result->kind = FLOAT_OBJ;
     else result->kind = INTEGER_OBJ;
@@ -457,6 +465,7 @@ static Object* number_operators(Object* left, Object* right, wchar* op)
 static Object* boolean_operators(Object* left, Object* right, wchar* op)
 {
     Object* result = arena_alloc(ARENA, sizeof(Object));
+    result->is_lvalue = 0;
     result->kind = BOOLEAN_OBJ;
     if(wcscmp(op, L"==") == 0)
     {
@@ -487,6 +496,7 @@ static Object* boolean_operators(Object* left, Object* right, wchar* op)
 static Object* string_operators(Object* left, Object* right, wchar* op)
 {
     Object* result = arena_alloc(ARENA, sizeof(Object));
+    result->is_lvalue = 0;
     if(left->kind == STRING_OBJ && right->kind == STRING_OBJ)
     {
         if(wcscmp(op, L"==") == 0)
@@ -549,6 +559,63 @@ static Object* string_operators(Object* left, Object* right, wchar* op)
 
 static Object* array_operators(Object* left, Object* right, wchar* op)
 {
+    Object* result = arena_alloc(ARENA, sizeof(Object));
+    result->array = 0;
+    if(left->kind == STRING_OBJ && right->kind == STRING_OBJ)
+    {
+        if(wcscmp(op, L"==") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = wcscmp(left->str, right->str) == 0 ? 1 : 0;
+            return result;
+        }
+        if(wcscmp(op, L"!=") == 0)
+        {
+            result->kind = BOOLEAN_OBJ;
+            result->bool_t = wcscmp(left->str, right->str) == 0 ? 0 : 1;
+            return result;
+        }
+        if(wcscmp(op, L"+") == 0)
+        {
+            result->kind = STRING_OBJ;
+            result->str = arena_alloc(ARENA, sizeof(wchar) * (wcslen(left->str) + wcslen(right->str) + 1));
+            wcscpy(result->str, left->str);
+            wcscat(result->str, right->str);
+            return result;
+            
+        }
+    }
+    if(left->kind == INTEGER_OBJ || right->kind == INTEGER_OBJ)
+    {
+        result->kind = STRING_OBJ;
+        if(left->kind == INTEGER_OBJ)
+        {
+            Object* temp = left;
+            left = right;
+            right = temp;
+        }
+        if(right->int_t < 0)
+        {
+            wprintf(L"Нельзя умножить строку на число, которое меньше нуля!!\n");
+            EXIT;
+        }
+        if(wcscmp(op, L"*") == 0)
+        {
+            size_t len = wcslen(left->str);
+            result->str = arena_alloc(ARENA, sizeof(wchar) * ((wcslen(left->str) * right->int_t) + 1));
+            size_t i,j;
+            size_t index = 0;
+            for(i = 0; i < right->int_t; ++i)
+            {
+                for(j=0;j<len;++j)
+                {
+                    *(result->str + index++) = *(left->str + j);
+                }
+            }
+            *(result->str + index) = L'\0';
+            return result;
+        }
+    }
     wprintf(L"Неподходящий оператор для работы с массивами\n");
     EXIT;
     return NULL;
@@ -562,12 +629,15 @@ Object* interpretate_bin(Expretion* expr)
     wchar* op = expr->binary->op;
     if(wcscmp(op, L"=") == 0)
     {
-        if(expr->binary->left->kind != VARIABLE_EXPR)
+        if(expr->binary->left->kind == VARIABLE_EXPR) return set_variable(current_envi, expr->binary->left->variable->name, get_object(right));
+        if(left->is_lvalue == 0)
         {
-            wprintf(L"Слева от оператора присвоения должно находиться имя переменной!\n");
+            wprintf(L"Слева от оператора присвоения должно находиться подходящее выражение!\n");
             EXIT;
         }
-        return set_variable(current_envi, expr->binary->left->variable->name, get_object(right));
+        *left = *get_object(right);
+        return empty_object;
+
     }
     if((left->kind == FLOAT_OBJ || left->kind == INTEGER_OBJ) && (right->kind == FLOAT_OBJ || right->kind == INTEGER_OBJ)) return number_operators(left, right, op);
     if(left->kind == BOOLEAN_OBJ && right->kind == BOOLEAN_OBJ) return boolean_operators(left, right, op);
@@ -611,6 +681,7 @@ Object* interpretate_index(Expretion* expr)
             EXIT;
         }
         ret = arena_alloc(ARENA, sizeof(Object));
+        ret->is_lvalue = 0;
         ret->kind = STRING_OBJ;
         ret->str = arena_alloc(ARENA, sizeof(wchar) * (2));
         *(ret->str) = *(dest->str + index->int_t);
@@ -624,7 +695,9 @@ Object* interpretate_index(Expretion* expr)
             wprintf(L"Ошибка: индекс за пределами списка!\n");
             EXIT;
         }
-        return get_object((Object*)bm_vector_at(dest->array, index->int_t));
+        ret = get_object((Object*)bm_vector_at(dest->array, index->int_t));
+        ret->is_lvalue = 1;
+        return ret;
     }
     return NULL;
 }
