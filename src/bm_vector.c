@@ -39,6 +39,7 @@ void* bm_vector_at(bm_vector* vec, size_t index)
             vec->data[i] = NULL;
         }
         vec->capacity += BM_VECTOR_BLOCK;
+        vec->len = index + 1;
     }
     return vec->data[index];
 }
