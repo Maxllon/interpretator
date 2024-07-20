@@ -33,7 +33,7 @@ typedef struct Environment Environment;
 
 typedef struct Var_Obj Var_Obj;
 typedef struct Func_Obj Func_Obj;
-typedef struct List_Obj List_Obj;
+typedef struct Index_Obj Index_Obj;
 
 struct Environment
 {
@@ -44,7 +44,6 @@ struct Environment
 struct Object
 {
     OBJECT_KIND kind;
-    int is_lvalue;
     union obj
     {
         long long int_t;
@@ -53,7 +52,10 @@ struct Object
         wchar* str;
 
         bm_vector* array;
-        Func_Obj* func;
+
+        Var_Obj var;
+        Func_Obj func;
+        Index_Obj index;
     };
     
 };
@@ -70,41 +72,49 @@ struct Func_Obj
     Expretion* expr;
 };
 
-/*
-все функции интерпретатора, расположенные в порядке их создания
-*/
-Environment* create_empty_environment(Environment*);
+struct Index_Obj
+{
+    Object* list;
+    Object* index;
+};
 
-//функции работы с переменными
-int is_def(Environment*, wchar*);
-Object* find_variable(Environment*, wchar*);
-Object* set_variable(Environment*, wchar*, Object*);
-Object* copy_object(Object*);
-Object* get_object(Object*);
-void add_variable(Environment*, Var_Obj*);
+void out_type(Object* obj);
 
-Object* interpretate(Expretion*, Arena*);
 
-Object* interpretate_atom(Expretion*);
+Object* find_var(wchar* name);
+Object* set_var(wchar* name, Object* obj);
 
-Object* interpretate_var(Expretion*);
-Object* interpretate_num(Expretion*);
-Object* interpretate_str(Expretion*);
-Object* interpretate_bool(Expretion*);
+//возвращает сам объект или его копию
+Object* get_var(Object* obj);
 
-Object* interpretate_bin(Expretion*);
 
-Object* interpretate_denial(Expretion* expr);
-Object* interpretate_index(Expretion*);
-Object* interpretate_list(Expretion*);
-Object* interpretate_call(Expretion*);
-Object* interpretate_func(Expretion*);
-Object* interpretate_return(void);
-Object* interpretate_while(Expretion*);
-Object* interpretate_foreach(Expretion*);
-Object* interpretate_break(void);
-Object* interpretate_if(Expretion*);
+void interpretate(Expretion* expr, Arena* arena);
 
+Object* interpretate_atom(Expretion* expr);
+
+//типы данных
+Object* interpetate_num(Expretion* expr);
+Object* interpretate_str(Expretion* expr);
+Object* interperate_bool(Expretion* expr);
+Object* interpretate_list(Expretion* expr);
+Object* interpretate_void(Expretion* expr);
+
+//работа с типами
+Object* interpretate_bin(Expretion* expr);
+Object* interpretate_index(Expretion* expr);
+
+//ветвления
+Object* interpetate_if(Expretion* expr);
+
+//циклы
+Object* interpretate_break(Expretion* expr);
+Object* interpetate_while(Expretion* expr);
+Object* interpretate_foreach(Expretion* expr);
+
+//функции
+Object* interpretate_return(Expretion* expr);
+Object* interpetate_func(Expretion* expr);
+Object* interpretate_call(Expretion* expr);
 
 
 #endif
