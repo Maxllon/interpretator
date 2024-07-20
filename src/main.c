@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
     tk_node* main = lexing(file, ARENA);
 
     struct Expretion* expr = parce(main, ARENA);
+    interpretate(expr, ARENA);
 
     
     arena_destroy(ARENA);

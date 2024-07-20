@@ -20,12 +20,14 @@ typedef enum
     BOOLEAN_OBJ,
 
     BINARY_OBJ,
-    ARRAY_OBJ,
+    LIST_OBJ,
     INDEX_OBJ,
 
     VOID_OBJ,
     BREAK_OBJ,
-    RETURN_OBJ
+    RETURN_OBJ,
+
+    VARIABLE_OBJ
 }OBJECT_KIND;
 
 typedef struct Object Object;
@@ -39,25 +41,6 @@ struct Environment
 {
     bm_vector* variables;
     Environment* parent;
-};
-
-struct Object
-{
-    OBJECT_KIND kind;
-    union obj
-    {
-        long long int_t;
-        long double float_t;
-        int bool_t;
-        wchar* str;
-
-        bm_vector* array;
-
-        Var_Obj var;
-        Func_Obj func;
-        Index_Obj index;
-    };
-    
 };
 
 struct Var_Obj
@@ -78,19 +61,43 @@ struct Index_Obj
     Object* index;
 };
 
-void out_type(Object* obj);
+struct Object
+{
+    OBJECT_KIND kind;
+    union obj
+    {
+        long long int_t;
+        long double float_t;
+        int bool_t;
+        wchar* str;
+
+        bm_vector* list;
+
+        Var_Obj var;
+        Func_Obj func;
+        Index_Obj index;
+    };
+    
+};
 
 
-Object* find_var(wchar* name);
-Object* set_var(wchar* name, Object* obj);
+wchar* out_type(Object* obj);
+
+Environment* create_empty_environment(Environment* parent);
+
+Object* find_var(wchar* name, Environment* envi);
+void set_var(Object* variable);
 
 //возвращает сам объект или его копию
-Object* get_var(Object* obj);
+Object* get_object(Object* obj);
 
 
 void interpretate(Expretion* expr, Arena* arena);
 
 Object* interpretate_atom(Expretion* expr);
+
+
+Object* interpretate_var(Expretion* expr);
 
 //типы данных
 Object* interpetate_num(Expretion* expr);
