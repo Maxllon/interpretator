@@ -76,7 +76,28 @@ Object* get_object(Object* obj)
     if(obj == NULL) return VOID_OBJECT;
     if(obj->kind == VOID_OBJ) return obj;
     if(obj->kind == VARIABLE_OBJ) return get_object(obj->var.value);
-    if(obj->kind == INDEX_OBJ) return get_object(((Object*) bm_vector_at(obj->index.list->var.value->list, obj->index.index->int_t)));
+    if(obj->kind == INDEX_OBJ)
+    {
+        /*
+        АААА ТУТ ОШИБКИ АУТ ОФ РЕНДЖ
+
+
+
+
+
+
+
+        */
+        if(obj->index.list->kind == LIST_OBJ) return get_object(((Object*) bm_vector_at(obj->index.list->list, obj->index.index->int_t)));
+        else
+        {
+            Object* ret_obj = arena_alloc(ARENA, sizeof(Object));
+            ret_obj->str = arena_alloc(ARENA, sizeof(wchar) * (2));
+            *ret_obj->str = *(obj->index.list->str + obj->index.index->int_t);
+            *(ret_obj->str + 1) = L'\0';
+            return ret_obj;
+        }
+    }
     Object* ret_obj = arena_alloc(ARENA, sizeof(Object));
     ret_obj->kind = obj->kind;
     switch(obj->kind)
@@ -134,7 +155,7 @@ void interpretate(Expretion* expr, Arena* arena)
     }
 
 
-    wprintf(L"%LF\n", ((Object*)find_var(L"а", current_envi))->var.value->float_t);
+    wprintf(L"%ls\n", ((Object*)find_var(L"а", current_envi))->var.value->str);
 
 }
 
@@ -283,7 +304,7 @@ static Object* bin_assign(Object* left, Object* right)
             switch(left->index.list->var.value->kind)
             {
                 case LIST_OBJ:
-                    bm_vector_change(left->index.list->var.value->list, left->index.index->int_t, get_object(right));
+                    bm_vector_change(left->index.list->list, left->index.index->int_t, get_object(right));
                 default:
                     wprintf(L"Ошибка: невозможно обратиться по индексу к этому типу: %ls\n", out_type(left->index.list->var.value));
                     EXIT;
@@ -315,20 +336,16 @@ Object* interpretate_index(Expretion* expr)
     obj->kind = INDEX_OBJ;
     obj->index.index = interpretate_atom(expr->index->index);
     obj->index.list = interpretate_atom(expr->index->destination);
-    printf("%lld\n", obj->index.list->kind);
     if(obj->index.index->kind != INTEGER_OBJ)
     {
         wprintf(L"Ошибка: Индекс массива представлен типа %ls\n", out_type(obj->index.index));
         EXIT;
     }
-    if(obj->index.list->kind != VARIABLE_OBJ)
+    if(obj->index.list->kind == VARIABLE_OBJ) obj->index.list = obj->index.list->var.value;
+    if(obj->index.list->kind == INDEX_OBJ) obj->index.list = (Object*) bm_vector_at(obj->index.list->index.list->list, obj->index.list->index.index->int_t);
+    if(obj->index.list->kind != STRING_OBJ && obj->index.list->kind != LIST_OBJ)
     {
-        wprintf(L"Ошибка: индекс массива можно брать только из переменной, а не из %ls\n", out_type(obj->index.list));
-        EXIT;
-    }
-    if(obj->index.list->var.value->kind != STRING_OBJ && obj->index.list->var.value->kind != LIST_OBJ)
-    {
-        wprintf(L"Ошибка: нельзя обращаться по индексу к этому типу: %ls\n", out_type(obj->index.list->var.value));
+        wprintf(L"Ошибка: нельзя обращаться по индексу к этому типу: %ls\n", out_type(obj->index.list));
         EXIT;  
     }
     return obj;
