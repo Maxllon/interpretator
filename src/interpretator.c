@@ -25,8 +25,11 @@ wchar* out_type(Object* obj)
         case LIST_OBJ:
             wcscpy(DATA, L"<СПИСОК>");
             break;
+        case INDEX_OBJ:
+            wcscpy(DATA, L"<ИНДЕКС>");
+            break;
         default:
-            wcscpy(DATA, L"<dev out_type()> Неизвестный тип объекта для вывода\n");
+            wprintf(L"<dev out_type()> Неизвестный тип объекта для вывода: %lld\n", obj->kind);
             EXIT;
             break;
     }
@@ -47,7 +50,7 @@ Object* find_var(wchar* name, Environment* envi)
     for(size_t i = 0; i < envi->variables->len; ++i)
     {
         obj = (Object*)bm_vector_at(envi->variables, i);
-        if(wcscmp(obj->var.name, name) == 0) return obj->var.value;
+        if(wcscmp(obj->var.name, name) == 0) return obj;
     } 
     if(envi->parent != NULL) return find_var(name, envi->parent);
     return NULL;
@@ -70,8 +73,10 @@ void set_var(Object* variable)
 
 Object* get_object(Object* obj)
 {
+    if(obj == NULL) return VOID_OBJECT;
     if(obj->kind == VOID_OBJ) return obj;
     if(obj->kind == VARIABLE_OBJ) return get_object(obj->var.value);
+    if(obj->kind == INDEX_OBJ) return get_object(((Object*) bm_vector_at(obj->index.list->var.value->list, obj->index.index->int_t)));
     Object* ret_obj = arena_alloc(ARENA, sizeof(Object));
     ret_obj->kind = obj->kind;
     switch(obj->kind)
@@ -94,7 +99,6 @@ Object* get_object(Object* obj)
             break;
 
         case LIST_OBJ:
-            ret_obj->kind = LIST_OBJ;
             ret_obj->list = bm_vector_create(ARENA);
             for(size_t i = 0; i < obj->list->len; ++i)
             {
@@ -130,7 +134,7 @@ void interpretate(Expretion* expr, Arena* arena)
     }
 
 
-    wprintf(L"%LF\n", ((Object*)find_var(L"а", current_envi))->float_t);
+    wprintf(L"%LF\n", ((Object*)find_var(L"а", current_envi))->var.value->float_t);
 
 }
 
@@ -144,6 +148,15 @@ Object* interpretate_atom(Expretion* expr)
             return interpretate_var(expr);
         case BINARY_EXPR:
             return interpretate_bin(expr);
+        case STRING_EXPR:
+            return interpretate_str(expr);
+        case BOOLEAN_EXPR:  
+            return interperate_bool(expr);
+        case ARRAY_EXPR:
+            return interpretate_list(expr);
+        case INDEX_EXPR:
+            return interpretate_index(expr);
+
         default:
             wprintf(L"<dev interpretate_atom()> Неизвестный тип объекта для интерпретации\n");
             EXIT;
@@ -193,26 +206,131 @@ Object* interpetate_num(Expretion* expr)
     return obj;
 }
 
+Object* interpretate_str(Expretion* expr)
+{
+    Object* obj = arena_alloc(ARENA, sizeof(Object));
+    obj->kind = STRING_OBJ;
+    obj->str = arena_alloc(ARENA, sizeof(wchar) * (1 + wcslen(expr->string->value)));
+    wcscpy(obj->str, expr->string->value);
+    return obj;
+}
+
+Object* interperate_bool(Expretion* expr)
+{
+    Object* obj = arena_alloc(ARENA, sizeof(Object));
+    obj->kind = BOOLEAN_OBJ;
+    obj->bool_t = wcscmp(expr->boolean->value, L"БЫЛЬ") == 0 ? 1 : 0;
+    return obj;
+}
+
+Object* interpretate_list(Expretion* expr)
+{
+    Object* obj = arena_alloc(ARENA, sizeof(Object));
+    obj->kind = LIST_OBJ;
+    obj->list = bm_vector_create(ARENA);
+    for(size_t i = 0; i < expr->array->expretions->len; ++i)
+    {
+        bm_vector_change(obj->list, i, interpretate_atom((Object*) bm_vector_at(expr->array->expretions, i)));
+    }
+    return obj;
+}
+
+Object* interpretate_void(Expretion* expr)
+{
+    return VOID_OBJECT;
+}
+
+static Object* bin_plus(Object* left, Object* right)
+{
+    return NULL;
+}
+
+static Object* bin_minus(Object* left, Object* right)
+{
+    return NULL;
+}
+
+static Object* bin_mult(Object* left, Object* right)
+{
+    return NULL;
+}
+
+static Object* bin_del(Object* left, Object* right)
+{
+    return NULL;
+}
+
+static Object* bin_mod(Object* left, Object* right)
+{
+    return NULL;
+}
+
+static Object* bin_div(Object* left, Object* right)
+{
+    return NULL;
+}
+
+static Object* bin_assign(Object* left, Object* right)
+{
+
+    switch(left->kind)
+    {
+        case VARIABLE_OBJ:
+            left->var.value = get_object(right);
+            set_var(left);
+            break;
+        case INDEX_OBJ:
+            switch(left->index.list->var.value->kind)
+            {
+                case LIST_OBJ:
+                    bm_vector_change(left->index.list->var.value->list, left->index.index->int_t, get_object(right));
+                default:
+                    wprintf(L"Ошибка: невозможно обратиться по индексу к этому типу: %ls\n", out_type(left->index.list->var.value));
+                    EXIT;
+            }
+            break;
+
+        default:
+            wprintf(L"Ошибка: к типу %ls не возможно присвоение\n", out_type(left));
+            EXIT;
+    }
+    return VOID_OBJECT;
+}
 Object* interpretate_bin(Expretion* expr)
 {
     Object* left = interpretate_atom(expr->binary->left);
     Object* right = interpretate_atom(expr->binary->right);
     wchar* op = expr->binary->op;
 
-    if(wcscmp(op, L"=") == 0)
-    {
-        switch(left->kind)
-        {
-            case VARIABLE_OBJ:
-                left->var.value = get_object(right);
-                set_var(left);
-                break;
+    if(wcscmp(op, L"=") == 0) return bin_assign(left, right);
+    
+    wprintf(L"Ошибка: Неизвестный оператор: <%ls>\n", op);
+    EXIT;
+    return NULL;
+}
 
-            default:
-                wprintf(L"Ошибка: к типу <%ls> не возможно присвоение\n", out_type(left));
-                EXIT;
-        }
-        return VOID_OBJECT;
+Object* interpretate_index(Expretion* expr)
+{
+    Object* obj = arena_alloc(ARENA, sizeof(Object));
+    obj->kind = INDEX_OBJ;
+    obj->index.index = interpretate_atom(expr->index->index);
+    obj->index.list = interpretate_atom(expr->index->destination);
+    printf("%lld\n", obj->index.list->kind);
+    if(obj->index.index->kind != INTEGER_OBJ)
+    {
+        wprintf(L"Ошибка: Индекс массива представлен типа %ls\n", out_type(obj->index.index));
+        EXIT;
     }
+    if(obj->index.list->kind != VARIABLE_OBJ)
+    {
+        wprintf(L"Ошибка: индекс массива можно брать только из переменной, а не из %ls\n", out_type(obj->index.list));
+        EXIT;
+    }
+    if(obj->index.list->var.value->kind != STRING_OBJ && obj->index.list->var.value->kind != LIST_OBJ)
+    {
+        wprintf(L"Ошибка: нельзя обращаться по индексу к этому типу: %ls\n", out_type(obj->index.list->var.value));
+        EXIT;  
+    }
+    return obj;
 }
 

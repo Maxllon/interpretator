@@ -31,21 +31,13 @@ void bm_vector_push(bm_vector* vec, void* item)
 
 void* bm_vector_at(bm_vector* vec, size_t index)
 {
-    if(vec->len < index)
-    {
-        vec->data = arena_realloc(vec->arena, vec->data, sizeof(void*) * (vec->capacity + BM_VECTOR_BLOCK));
-        for(size_t i = vec->capacity; i < vec->capacity + BM_VECTOR_BLOCK; ++i)
-        {
-            vec->data[i] = NULL;
-        }
-        vec->capacity += BM_VECTOR_BLOCK;
-        vec->len = index + 1;
-    }
+    if(vec->len <= index) return NULL;
     return vec->data[index];
 }
 void bm_vector_change(bm_vector* vec, size_t index, void* item)
 {
-    if(vec->len < index)
+    if(index >= vec->len) vec->len = index + 1;
+    if(vec->len > vec->capacity)
     {
         vec->data = arena_realloc(vec->arena, vec->data, sizeof(void*) * (vec->capacity + BM_VECTOR_BLOCK));
         for(size_t i = vec->capacity; i < vec->capacity + BM_VECTOR_BLOCK; ++i)
