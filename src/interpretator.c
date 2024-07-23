@@ -78,22 +78,40 @@ Object* get_object(Object* obj)
     if(obj->kind == VARIABLE_OBJ) return get_object(obj->var.value);
     if(obj->kind == INDEX_OBJ)
     {
-        /*
-        АААА ТУТ ОШИБКИ АУТ ОФ РЕНДЖ
+        size_t index;
+        if(obj->index.index->int_t < 0)
+        {
+            if(obj->index.list->kind == LIST_OBJ) index = obj->index.list->list->len + obj->index.index->int_t;
+            else index = wcslen(obj->index.list->str) + obj->index.index->int_t;
+        }
+        else index = obj->index.index->int_t;
 
+        if(obj->index.list->kind == LIST_OBJ)
+        {
+            if(index >= obj->index.list->list->len)
+            {
+                wprintf(L"Ошибка: индекс за пределами массива\n");
+                EXIT;
+            }
+        }
+        if(obj->index.list->kind == STRING_OBJ)
+        {
+            if(index >= wcslen(obj->index.list->str))
+            {
+                wprintf(L"Ошибка: индекс за пределами строки\n");
+                EXIT;
+            }
+        }
 
-
-
-
-
-
-        */
-        if(obj->index.list->kind == LIST_OBJ) return get_object(((Object*) bm_vector_at(obj->index.list->list, obj->index.index->int_t)));
+        if(obj->index.list->kind == LIST_OBJ)
+        {
+            return get_object(((Object*) bm_vector_at(obj->index.list->list, index)));
+        }
         else
         {
             Object* ret_obj = arena_alloc(ARENA, sizeof(Object));
             ret_obj->str = arena_alloc(ARENA, sizeof(wchar) * (2));
-            *ret_obj->str = *(obj->index.list->str + obj->index.index->int_t);
+            *ret_obj->str = *(obj->index.list->str + index);
             *(ret_obj->str + 1) = L'\0';
             return ret_obj;
         }
@@ -153,10 +171,7 @@ void interpretate(Expretion* expr, Arena* arena)
     {
         interpretate_atom((Expretion*) bm_vector_at(expr->seque->expretions, i));
     }
-
-
     wprintf(L"%ls\n", ((Object*)find_var(L"а", current_envi))->var.value->str);
-
 }
 
 Object* interpretate_atom(Expretion* expr)

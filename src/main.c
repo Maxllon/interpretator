@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
     struct Expretion* expr = parce(main, ARENA);
     interpretate(expr, ARENA);
 
-    
     arena_destroy(ARENA);
     system("pause");
     return 0;
