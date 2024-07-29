@@ -73,9 +73,9 @@ struct Object
 
         bm_vector* list;
 
-        Var_Obj var;
-        Func_Obj func;
-        Index_Obj index;
+        Var_Obj* var;
+        Func_Obj* func;
+        Index_Obj* index;
     };
     
 };
