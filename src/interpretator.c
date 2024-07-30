@@ -176,7 +176,7 @@ void interpretate(Expretion* expr, Arena* arena)
     {
         interpretate_atom((Expretion*) bm_vector_at(expr->seque->expretions, i));
     }
-    wprintf(L"%ls\n", ((Object*)find_var(L"а", current_envi))->var->value->str);
+    wprintf(L"%lld\n", ((Object*)find_var(L"а", current_envi))->var->value->bool_t);
 }
 
 Object* interpretate_atom(Expretion* expr)
@@ -312,7 +312,47 @@ static Object* bin_div(Object* left, Object* right)
 {
     return NULL;
 }
-
+static Object* bin_equality(Object* left, Object* right, int is_reverse)
+{
+    Object* obj = arena_alloc(ARENA, sizeof(Object));
+    left = get_object(left);
+    right = get_object(right);
+    obj->kind = BOOLEAN_OBJ;
+    if((left->kind == INTEGER_OBJ || left->kind == FLOAT_OBJ) && (right->kind == INTEGER_OBJ || right->kind == FLOAT_OBJ))
+    {
+        if(left->kind == INTEGER_OBJ && right->kind == INTEGER_OBJ) obj->bool_t = (left->int_t == right->int_t);
+        else
+        {
+            obj->bool_t = 
+            ((left->kind == INTEGER_OBJ ? (long long) left->int_t : left->float_t) 
+            == 
+            (right->kind == INTEGER_OBJ ? (long long) right->int_t : right->float_t));
+        }
+    }
+    else if(left->kind != right->kind) obj->bool_t = 0;
+    else if(left->kind == VOID_OBJ) obj->bool_t = 1;
+    else if(left->kind == BOOLEAN_OBJ) obj->bool_t = (left->bool_t == right->bool_t );
+    else if(left->kind == STRING_OBJ) obj->bool_t = (wcscmp(left->str, right->str) == 0 ? 1 : 0);
+    else if(left->kind == LIST_OBJ)
+    {
+        if(left->list->len != right->list->len) obj->bool_t = 0;
+        else
+        {
+            obj->bool_t = 1;
+            for(size_t i = 0; i < left->list->len; ++i)
+            {
+                if(!(bin_equality((Object*) bm_vector_at(left->list, i), (Object*) bm_vector_at(right->list, i), 0)->bool_t))
+                {
+                    obj->bool_t = 0;
+                    break;
+                }
+            }
+        }
+    }
+    
+    if(is_reverse) obj->bool_t = (obj->bool_t == 1 ? 0 : 1);
+    return obj;
+}
 static Object* bin_assign(Object* left, Object* right)
 {
 
@@ -346,6 +386,8 @@ Object* interpretate_bin(Expretion* expr)
     wchar* op = expr->binary->op;
 
     if(wcscmp(op, L"=") == 0) return bin_assign(left, right);
+    if(wcscmp(op, L"==") == 0) return bin_equality(left, right, 0);
+    if(wcscmp(op, L"!=") == 0) return bin_equality(left, right, 1);
     
     wprintf(L"Ошибка: Неизвестный оператор: <%ls>\n", op);
     EXIT1;
