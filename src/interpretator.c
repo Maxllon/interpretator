@@ -74,6 +74,39 @@ void set_var(Object* variable)
     bm_vector_push(current_envi->variables, variable);
 }
 
+static size_t check_index(Object* obj, long long start_index)
+{
+    if(obj->kind != STRING_OBJ && obj->kind != LIST_OBJ)
+    {
+        wprintf(L"Ошибка: к типу %ls нельзя обращаться по индексу\n", out_type(obj));
+        EXIT1;
+    }
+    size_t index;
+    if(start_index < 0)
+    {
+        if(obj->kind == LIST_OBJ) index = obj->list->len + start_index;
+        else index = wcslen(obj->str) + start_index;
+    }
+    else index = start_index;
+
+    if(obj->kind == LIST_OBJ)
+    {
+        if(index >= obj->list->len)
+        {
+            wprintf(L"Ошибка: индекс за пределами массива\n");
+            EXIT1;
+        }
+    }
+    if(obj->kind == STRING_OBJ)
+    {
+        if(index >= wcslen(obj->str))
+        {
+            wprintf(L"Ошибка: индекс за пределами строки\n");
+            EXIT1;
+        }
+    }
+    return index;
+}
 Object* get_object(Object* obj)
 {
     if(obj == NULL) return VOID_OBJECT;
@@ -81,31 +114,7 @@ Object* get_object(Object* obj)
     if(obj->kind == VARIABLE_OBJ) return get_object(obj->var->value);
     if(obj->kind == INDEX_OBJ)
     {
-        size_t index;
-        if(obj->index->index->int_t < 0)
-        {
-            if(obj->index->list->kind == LIST_OBJ) index = obj->index->list->list->len + obj->index->index->int_t;
-            else index = wcslen(obj->index->list->str) + obj->index->index->int_t;
-        }
-        else index = obj->index->index->int_t;
-
-        if(obj->index->list->kind == LIST_OBJ)
-        {
-            if(index >= obj->index->list->list->len)
-            {
-                wprintf(L"Ошибка: индекс за пределами массива\n");
-                EXIT1;
-            }
-        }
-        if(obj->index->list->kind == STRING_OBJ)
-        {
-            if(index >= wcslen(obj->index->list->str))
-            {
-                wprintf(L"Ошибка: индекс за пределами строки\n");
-                EXIT1;
-            }
-        }
-
+        size_t index = check_index(obj->index->list, obj->index->index->int_t);
         if(obj->index->list->kind == LIST_OBJ)
         {
             return get_object(((Object*) bm_vector_at(obj->index->list->list, index)));
@@ -362,20 +371,17 @@ static Object* bin_assign(Object* left, Object* right)
             left->var->value = get_object(right);
             set_var(left);
             break;
-        /*case INDEX_OBJ:
-            switch(left->index->list->kind)
+        case INDEX_OBJ:
+            size_t index = check_index(left->index->list, left->index->index->int_t);
+            if(left->index->list->kind == LIST_OBJ)
             {
-                case LIST_OBJ:
-                    bm_vector_change(left->index->list->list, left->index->index->int_t, get_object(right));
-                default:
-                    wprintf(L"Ошибка: невозможно обратиться по индексу к этому типу: %ls\n", out_type(left->index->list->var->value));
-                    EXIT1;
+                bm_vector_change(left->index->list->list, index, get_object(right));
             }
-            break;*/
-
-        default:
-            wprintf(L"Ошибка: к типу %ls не возможно присвоение\n", out_type(left));
-            EXIT1;
+            if(left->index->list->kind == STRING_OBJ)
+            {
+                wprintf(L"СТРОКА\n");
+                EXIT1;
+            }
     }
     return VOID_OBJECT;
 }
