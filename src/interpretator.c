@@ -371,17 +371,10 @@ static Object* bin_assign(Object* left, Object* right)
             left->var->value = get_object(right);
             set_var(left);
             break;
-        case INDEX_OBJ:
-            size_t index = check_index(left->index->list, left->index->index->int_t);
-            if(left->index->list->kind == LIST_OBJ)
-            {
-                bm_vector_change(left->index->list->list, index, get_object(right));
-            }
-            if(left->index->list->kind == STRING_OBJ)
-            {
-                wprintf(L"СТРОКА\n");
-                EXIT1;
-            }
+        default:
+            wprintf(L"Ошибка: тип %ls не может быть слева от присвоения!\n", out_type(left));
+            EXIT1;
+            break;
     }
     return VOID_OBJECT;
 }
