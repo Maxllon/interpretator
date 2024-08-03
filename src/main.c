@@ -19,7 +19,6 @@ int main(int argc, char *argv[])
     if(out_file) wprintf(L"%ls\n\n\n\n",file);
 
     tk_node* main = lexing(file, ARENA);
-
     struct Expretion* expr = parce(main, ARENA);
     interpretate(expr, ARENA);
 

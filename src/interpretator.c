@@ -187,7 +187,9 @@ void interpretate(Expretion* expr, Arena* arena)
     {
         interpretate_atom((Expretion*) bm_vector_at(expr->seque->expretions, i));
     }
+    wprintf(L"%ls\n", ((Object*)find_var(L"б", current_envi))->var->value->str);
     wprintf(L"%lld\n", ((Object*)find_var(L"а", current_envi))->var->value->bool_t);
+    EXIT1;
 }
 
 Object* interpretate_atom(Expretion* expr)
@@ -364,7 +366,22 @@ static Object* bin_equality(Object* left, Object* right, int is_reverse)
     if(is_reverse) obj->bool_t = (obj->bool_t == 1 ? 0 : 1);
     return obj;
 }
+void remove_char_at_index(wchar_t *str, size_t index) {
+    size_t len = wcslen(str);
+    
+    // Проверка, что индекс находится в пределах длины строки
+    if (index >= len) {
+        return; // Если индекс вне границ, ничего не делаем
+    }
 
+    // Сдвигаем все символы после индекса влево на одну позицию
+    for (size_t i = index; i < len - 1; i++) {
+        str[i] = str[i + 1];
+    }
+
+    // Завершаем строку нулевым символом
+    str[len - 1] = L'\0';
+}
 static Object* bin_assign(Object* left, Object* right)
 {
 
@@ -394,35 +411,43 @@ static Object* bin_assign(Object* left, Object* right)
                         wprintf(L"Ошибка: попытка присвоить строке по индексу объекта с типом %ls невозможно!\n", out_type(right));
                         EXIT1;
                     }
-                    wchar* str = arena_alloc(ARENA, sizeof(wchar) * ((wcslen(array->str) - 1) + wcslen(right->str) + 1));
+                    wchar* str = arena_alloc(ARENA, sizeof(wchar) * ((wcslen(array->str) - 1) + wcslen(right->str) + 2));
 
                     if(left->index->list->kind != VARIABLE_OBJ)
                     {
                         wprintf(L"Ошибка: строки не могут быть двумерными!\n");
                         EXIT1;
                     }
-
                     size_t i_global = 0;
                     size_t i_left = 0;
                     size_t i_right = 0;
                     size_t index = check_index(array, left->index->index->int_t);
-                    while(*(array->str + i_left) != L'\0')
+                    size_t temp;
+                    if(*(right->str) == L'\0')
                     {
-                        if(i_left == index)
+                        wcscpy(str, array->str);
+                        remove_char_at_index(str, index);
+                    }
+                    else
+                    {
+                        while(*(array->str + i_left) != L'\0')
                         {
-                            while(*(right->str + i_right) != L'\0')
+                            if(i_left == index)
                             {
-                                *(str + i_global) = *(right->str + i_right);
-                                ++i_global;
-                                ++i_right;
+                                while(*(right->str + i_right) != L'\0')
+                                {
+                                    *(str + i_global) = *(right->str + i_right);
+                                    ++i_global;
+                                    ++i_right;
+                                }
+                                --i_global;
                             }
-                            --i_global;
-                        }
-                        else *(str + i_global) = *(array->str + i_left);
-                        ++i_left;
-                        ++i_global;
+                            else *(str + i_global) = *(array->str + i_left);
+                            ++i_left;
+                            ++i_global;
                     }
                     *(str + i_global) = L'\0';
+                    }
                     right->str = str;
                     obj->var->value = right;
                     break;
