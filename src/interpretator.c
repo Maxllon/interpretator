@@ -114,6 +114,8 @@ Object* get_object(Object* obj)
     if(obj->kind == VARIABLE_OBJ) return get_object(obj->var->value);
     if(obj->kind == INDEX_OBJ)
     {
+        if(obj->index->list->kind == VARIABLE_OBJ) obj->index->list = obj->index->list->var->value;
+        if(obj->index->list->kind == INDEX_OBJ) obj->index->list = get_object(obj->index->list);
         size_t index = check_index(obj->index->list, obj->index->index->int_t);
         if(obj->index->list->kind == LIST_OBJ)
         {
@@ -362,6 +364,7 @@ static Object* bin_equality(Object* left, Object* right, int is_reverse)
     if(is_reverse) obj->bool_t = (obj->bool_t == 1 ? 0 : 1);
     return obj;
 }
+
 static Object* bin_assign(Object* left, Object* right)
 {
 
@@ -370,6 +373,64 @@ static Object* bin_assign(Object* left, Object* right)
         case VARIABLE_OBJ:
             left->var->value = get_object(right);
             set_var(left);
+            break;
+        case INDEX_OBJ:
+            Object* obj = left;
+            while(obj->kind != VARIABLE_OBJ)
+            {
+                obj = obj->index->list;
+            }
+            Object* array = obj->var->value;
+            switch(array->kind)
+            {
+                case LIST_OBJ:
+                    wprintf(L"ТУТ ПУСТО\n");
+                    EXIT1;
+                    break;
+                case STRING_OBJ:
+                    right = get_object(right);
+                    if(right->kind != STRING_OBJ)
+                    {
+                        wprintf(L"Ошибка: попытка присвоить строке по индексу объекта с типом %ls невозможно!\n", out_type(right));
+                        EXIT1;
+                    }
+                    wchar* str = arena_alloc(ARENA, sizeof(wchar) * ((wcslen(array->str) - 1) + wcslen(right->str) + 1));
+
+                    if(left->index->list->kind != VARIABLE_OBJ)
+                    {
+                        wprintf(L"Ошибка: строки не могут быть двумерными!\n");
+                        EXIT1;
+                    }
+
+                    size_t i_global = 0;
+                    size_t i_left = 0;
+                    size_t i_right = 0;
+                    size_t index = check_index(array, left->index->index->int_t);
+                    while(*(array->str + i_left) != L'\0')
+                    {
+                        if(i_left == index)
+                        {
+                            while(*(right->str + i_right) != L'\0')
+                            {
+                                *(str + i_global) = *(right->str + i_right);
+                                ++i_global;
+                                ++i_right;
+                            }
+                            --i_global;
+                        }
+                        else *(str + i_global) = *(array->str + i_left);
+                        ++i_left;
+                        ++i_global;
+                    }
+                    *(str + i_global) = L'\0';
+                    right->str = str;
+                    obj->var->value = right;
+                    break;
+                default:
+                    wprintf(L"Ошибка на присвоении\n");
+                    EXIT1;
+            }
+            set_var(obj);
             break;
         default:
             wprintf(L"Ошибка: тип %ls не может быть слева от присвоения!\n", out_type(left));
@@ -399,16 +460,24 @@ Object* interpretate_index(Expretion* expr)
     obj->kind = INDEX_OBJ;
     obj->index = arena_alloc(ARENA, sizeof(Index_Obj));
     obj->index->index = get_object(interpretate_atom(expr->index->index));
-    obj->index->list = get_object(interpretate_atom(expr->index->destination));
+    obj->index->list = interpretate_atom(expr->index->destination);
     if(obj->index->index->kind != INTEGER_OBJ)
     {
         wprintf(L"Ошибка: Индекс массива представлен типа %ls\n", out_type(obj->index->index));
         EXIT1;
     }
-    if(obj->index->list->kind != STRING_OBJ && obj->index->list->kind != LIST_OBJ)
+    if(obj->index->list->kind != VARIABLE_OBJ && obj->index->list->kind != INDEX_OBJ)
     {
         wprintf(L"Ошибка: нельзя обращаться по индексу к этому типу: %ls\n", out_type(obj->index->list));
         EXIT1;  
+    }
+    if(obj->index->list->kind == VARIABLE_OBJ)
+    {
+        if(obj->index->list->var->value->kind != STRING_OBJ && obj->index->list->var->value->kind != LIST_OBJ)
+        {
+            wprintf(L"Ошибка: нельзя обращаться по индексу к этому типу: %ls\n", out_type(obj->index->list));
+            EXIT1;  
+        }        
     }
     return obj;
 }
