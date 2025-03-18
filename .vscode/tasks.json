@@ -6,35 +6,31 @@
 			"type": "cppbuild",
 			"label": "C/C++: gcc.exe build active file",
 			"command": "gcc",
-			"args": 
-			[
+			"args": [
 				"-fdiagnostics-color=always",
 				"-g",
-				
+				"-I",
+				"C:/Users/Maxim/gcc/lib/gcc/x86_64-w64-mingw32/12.3.0/include",
 				"-I${workspaceFolder}/headers",
-
 				"${workspaceFolder}/src/main.c",
-
+				"${workspaceFolder}/src/read_file.c",
 				"${workspaceFolder}/structures/string.c",
 				"${workspaceFolder}/structures/vector.c",
 				"${workspaceFolder}/structures/arena.c",
-
 				"-o",
-				"${workspaceFolder}\\daml.exe"
+				"${workspaceFolder}//daml.exe"
 			],
 			"options": {
 				"cwd": "${fileDirname}"
 			},
-			"problemMatcher": 
-			[
+			"problemMatcher": [
 				"$gcc"
 			],
-			"group": 
-			{
+			"group": {
 				"kind": "build",
 				"isDefault": true
 			},
-			"detail": "compiler: C:\\Users\\Maxim\\gcc\\bin\\gcc.exe"
+			"detail": "compiler: C://Users//Maxim//gcc//bin//gcc.exe"
 		}
 	]
 }

@@ -12,6 +12,7 @@ typedef struct
 
 Arena* arena_init();
 void* arena_alloc(Arena*, size_t);
+void* arena_realloc(Arena*, void*, size_t);
 void arena_destroy(Arena*);
 
 #endif
