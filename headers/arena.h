@@ -1,18 +1,17 @@
 #ifndef ARENA_H
 #define ARENA_H
 
-#include"includes.h"
+#include<defines.h>
 
-typedef struct Arena
+typedef struct
 {
-    char* region;
-    size_t index;
+    byte* memory;
+    size_t used;
     size_t size;
 }Arena;
 
-Arena* arena_create();
+Arena* arena_init();
 void* arena_alloc(Arena*, size_t);
-void* arena_realloc(Arena*, void*, size_t);
 void arena_destroy(Arena*);
 
 #endif
