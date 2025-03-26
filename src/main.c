@@ -17,11 +17,11 @@ int main(int argc, char *argv[])
     wchar* file;
     read_file(filename, &file, ARENA);
     if(out_file) wprintf(L"%ls\n\n\n\n",file);
-
+/*
     tk_node* main = lexing(file, ARENA);
     struct Expretion* expr = parce(main, ARENA);
     interpretate(expr, ARENA);
-
+*/
     arena_destroy(ARENA);
     system("pause");
     return 0;
