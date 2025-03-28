@@ -58,15 +58,46 @@ static size_t count(wchar* str, wchar symb)
     return c;
 }
 
-const wchar* KEYWORDS[] = {L"коли", L"доселе", L"инако", L"обрати", L"не", L"бери", L"из", L"служ", L"нч", L"кц", L"БЫЛЬ", L"БЛЯДЬ", L"то", L"НЕЧА", L"рвать"};
-const wchar* BIN_OPS[] = {L"и", L"або"};
+static const wchar* DIGITS = L"0123456789.";
+static const wchar* OPERATORS = L"+-=><*/^\%";
+static const wchar* SPECIALS = L"(){}[];\",";
 
-const wchar* BIN_OP = L"+-=*/^>!<\%";
-const wchar* DIGITS = L"0123456789.";
-const wchar* SPEC = L";,()[]{}:\"";
+static const wchar* KEYWORDS[] =
+{
+    L"пока",
+    L"для",
+    L"функ",
+    L"вернуть",
+    L"закончить",
+    L"продожить",
+    L"НЕ",
+    NULL
+};
+static const wchar* BIN_OPERATORS[] =
+{
+    L"+",
+    L"-",
+    L"*",
+    L"/",
+    L"\%",
+    L"^",
+    L"ИЛИ",
+    L"И",
+    L"==",
+    L"=",
+    L">=",
+    L"<=",
+    L">",
+    L"<",
+    NULL
+};
 
 tk_node* lexing(wchar* file, Arena* arena)
 {
+    if(file==NULL)
+    {
+        return NULL;
+    }
     ARENA = arena;
     
     TOKEN_NAMES[END] = L"КОНЕЦ";
@@ -74,13 +105,13 @@ tk_node* lexing(wchar* file, Arena* arena)
     TOKEN_NAMES[KEYWORD] = L"СЛОВО-КЛЮЧ";
     TOKEN_NAMES[VARIABLE] = L"ПЕРЕМЕННАЯ";
     TOKEN_NAMES[STRING] = L"СТРОКА";
-    TOKEN_NAMES[BINARY] = L"ОПЕРАТОР";
+    TOKEN_NAMES[BINARY] = L"БИНАРНЫЙ ОПЕРАТОР";
     TOKEN_NAMES[NUMBER] = L"ЧИСЛО";
 
     TOKEN_NAMES[SYMBOL] = L"СИМВОЛ";
     TOKEN_NAMES[SPECIAL] = L"ЗНАК";
     TOKEN_NAMES[DIGIT] = L"ЦИФРА";
-    TOKEN_NAMES[BIN] = L"ОПЕРАТОР";
+    TOKEN_NAMES[OP] = L"ОПЕРАТОР";
 
 
     //--------------------------lexing symbols-------------------------
@@ -90,31 +121,25 @@ tk_node* lexing(wchar* file, Arena* arena)
     pos.y = 0;
     wchar* str;
     wchar sym;
-    size_t f_len = wcslen(file);
-    for(size_t i = 0; i < f_len; ++i)
+    for(size_t i = 0; file[i]; ++i)
     {
-        sym = *(file+i);
-        if(wcschr(SPEC, sym) != NULL)
+        sym = file[i];
+        if(sym == L'\r') continue;
+        if(sym == L'\n')
+        {
+            pos.y++;
+            pos.x = 0;
+            continue;
+        }
+        if(wcschr(SPECIALS, sym) != NULL)
         {
             emp_str(str);
             push_node(symbols, new_node(SPECIAL, str, pos));
         }
-        else if(sym == L'\n')
-        {
-            pos.y++;
-            pos.x = 0;
-            emp_str(str);
-            *str = L' ';
-            push_node(symbols, new_node(SYMBOL, str, pos));
-        }
-        else if(wcschr(BIN_OP, sym) != NULL)
+        else if(wcschr(OPERATORS, sym) != NULL)
         {
             emp_str(str);
-            if(sym == L'-' && wcschr(DIGITS, *(file+i+1)) != NULL && i < f_len - 1 && (wcschr(DIGITS, *(file+i-1)) == NULL || i == 0))
-            {
-                push_node(symbols, new_node(DIGIT, str, pos));
-            }
-            else push_node(symbols, new_node(BINARY, str, pos));
+            push_node(symbols, new_node(OP, str, pos));
         }
         else if(wcschr(DIGITS, sym) != NULL)
         {
@@ -126,7 +151,7 @@ tk_node* lexing(wchar* file, Arena* arena)
             emp_str(str);
             push_node(symbols, new_node(SYMBOL, str, pos));          
         }
-        if(sym != L'\n') pos.x++;
+        pos.x++;
     }
     pos.x = -1;
     pos.y = -1;
@@ -180,7 +205,7 @@ tk_node* lexing(wchar* file, Arena* arena)
             if(*(symbols->value) == L'\"')
             {
                 if(symbols->next->kind == END)
-                {;
+                {
                     wprintf(L"Ошибка: строка не имеет конца!! <%d><%d>\n", pos.x, pos.y);
                     EXIT;
                 }
@@ -201,6 +226,23 @@ tk_node* lexing(wchar* file, Arena* arena)
                 push_node(main, new_node(SPECIAL, str, pos));
             }
         }
+        //lex operators
+        else if(symbols->kind == OP && *(symbols->value) != L' ')
+        {
+            while(symbols->kind == OP && *(symbols->value) != L' ')
+            {
+                bm_wcscat(str, symbols->value);
+                symbols = symbols->next;
+            }
+            for(size_t i = 0; BIN_OPERATORS[i]; ++i)
+            {
+                if(wcscmp(str, BIN_OPERATORS[i]) == 0)
+                {
+                    push_node(main, new_node(BINARY, str, pos));
+                }
+            }
+            symbols = symbols->previous;
+        }
         //lex words
         else if(symbols->kind == SYMBOL && *(symbols->value) != L' ')
         {
@@ -209,7 +251,7 @@ tk_node* lexing(wchar* file, Arena* arena)
                 bm_wcscat(str, symbols->value);
                 symbols = symbols->next;
             }
-            for(size_t i = 0; i < sizeof(KEYWORDS)/sizeof(wchar*); ++i)
+            for(size_t i = 0; KEYWORDS[i]; ++i)
             {
                 if(wcscmp(str, KEYWORDS[i]) == 0)
                 {
@@ -219,30 +261,9 @@ tk_node* lexing(wchar* file, Arena* arena)
             }
             if(!temp)
             {
-            for(size_t i = 0; i < sizeof(BIN_OPS)/sizeof(wchar*); ++i)
-            {
-                if(wcscmp(str, BIN_OPS[i]) == 0)
-                {
-                    push_node(main, new_node(BINARY, str, pos));
-                    temp++;
-                }
-                
+                push_node(main, new_node(VARIABLE, str, pos));
             }
-            }
-            if(!temp) push_node(main, new_node(VARIABLE, str, pos));
 
-
-            symbols = symbols->previous;
-        }
-        //lex bin
-        else if(symbols->kind == BINARY)
-        {
-            while(symbols->kind == BINARY)
-            {
-                bm_wcscat(str, symbols->value);
-                symbols = symbols->next;
-            }
-            push_node(main, new_node(BINARY, str, pos));
 
             symbols = symbols->previous;
         }

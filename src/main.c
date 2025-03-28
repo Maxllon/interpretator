@@ -10,17 +10,18 @@
 
 int main(int argc, char *argv[])
 {
-    setlocale(LC_CTYPE,".UTF8");
+
+    _wsetlocale(LC_ALL, L"");
     Arena* ARENA = arena_create();
 
-    char* filename = "example";
+    wchar* filename = L"example.txt";
     wchar* file;
-    read_file(filename, &file, ARENA);
+    read_file_win(L"example.txt", &file, ARENA);
     if(out_file) wprintf(L"%ls\n\n\n\n",file);
-/*
     tk_node* main = lexing(file, ARENA);
     struct Expretion* expr = parce(main, ARENA);
-    interpretate(expr, ARENA);
+
+/*   interpretate(expr, ARENA);
 */
     arena_destroy(ARENA);
     system("pause");

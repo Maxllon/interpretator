@@ -10,22 +10,25 @@ typedef struct
     int y;
 } VEC_2;
 
-typedef enum
+typedef enum TOKEN_KIND TOKEN_KIND;
+
+enum TOKEN_KIND
 {
     END = 0,
     START,
     
     KEYWORD,
+    BINARY,
+    
     VARIABLE,
     STRING,
-    BINARY,
     NUMBER,
 
     SPECIAL,
     DIGIT,
     SYMBOL,
-    BIN
-}TOKEN_KIND;
+    OP
+};
 
 typedef struct tk_node tk_node;
 struct tk_node
