@@ -28,6 +28,11 @@ tk_node* go_start(tk_node* main)
     while(main->previous != NULL) main = main->previous;
     return main;
 }
+tk_node* go_end(tk_node* main)
+{
+    while(main->next != NULL) main = main->next;
+    return main;
+}
 static wchar* TOKEN_NAMES[sizeof(TOKEN_KIND)];
 
 void out_tk_list(tk_node *main)
@@ -59,8 +64,8 @@ static size_t count(wchar* str, wchar symb)
 }
 
 static const wchar* DIGITS = L"0123456789.";
-static const wchar* OPERATORS = L"+-=><*/^\%";
-static const wchar* SPECIALS = L"(){}[];\",";
+static const wchar* OPERATORS = L"+-=>!<*/^\%";
+static const wchar* SPECIALS = L"(){}[]:;\",";
 
 static const wchar* KEYWORDS[] =
 {
@@ -68,9 +73,17 @@ static const wchar* KEYWORDS[] =
     L"для",
     L"функ",
     L"вернуть",
-    L"закончить",
+    L"завершить",
     L"продожить",
     L"НЕ",
+    L"Истина",
+    L"Ложь",
+    L"нч",
+    L"кц",
+    L"ПУСТОТА",
+    L"если",
+    L"иначе",
+    L"из",
     NULL
 };
 static const wchar* BIN_OPERATORS[] =
@@ -79,6 +92,7 @@ static const wchar* BIN_OPERATORS[] =
     L"-",
     L"*",
     L"/",
+    L"//",
     L"\%",
     L"^",
     L"ИЛИ",
@@ -89,6 +103,7 @@ static const wchar* BIN_OPERATORS[] =
     L"<=",
     L">",
     L"<",
+    L"!=",
     NULL
 };
 
@@ -129,6 +144,9 @@ tk_node* lexing(wchar* file, Arena* arena)
         {
             pos.y++;
             pos.x = 0;
+            emp_str(str);
+            *(str) = L' ';
+            push_node(symbols, new_node(SYMBOL, str, pos));   
             continue;
         }
         if(wcschr(SPECIALS, sym) != NULL)
@@ -188,6 +206,11 @@ tk_node* lexing(wchar* file, Arena* arena)
                 wprintf(L"Ошибка: В числе не может быть две точки!! <%d><%d>\n", pos.x, pos.y);
                 EXIT;
             }
+            if(*(str) == L'.')
+            {
+                wprintf(L"Лексер: Число не может начинать с точки <%d><%d>\n", pos.x, pos.y);
+                EXIT;
+            }
             wchar* temp = str;
             while(*(temp) != L'\0') temp++;
             if(*(temp-1) == L'.')
@@ -238,8 +261,23 @@ tk_node* lexing(wchar* file, Arena* arena)
             {
                 if(wcscmp(str, BIN_OPERATORS[i]) == 0)
                 {
-                    push_node(main, new_node(BINARY, str, pos));
+                    temp++;
+                    if(wcscmp(str, L"-")==0)
+                    {
+                        tk_node* temp = go_end(main);
+                        if(temp->kind != STRING && temp->kind != NUMBER && temp->kind != VARIABLE)
+                        {
+                            push_node(main, new_node(KEYWORD, str, pos));
+                        }
+                        else push_node(main, new_node(BINARY, str, pos));
+                    }
+                    else push_node(main, new_node(BINARY, str, pos));
                 }
+            }
+            if(!temp)
+            {
+                wprintf(L"Лексер: неизвестный оператор: %ls <%d><%d>\n", str, pos.x, pos.y);
+                EXIT;
             }
             symbols = symbols->previous;
         }
@@ -257,6 +295,17 @@ tk_node* lexing(wchar* file, Arena* arena)
                 {
                     push_node(main, new_node(KEYWORD, str, pos));
                     temp++;
+                }
+            }
+            if(!temp)
+            {
+                for(size_t i = 0; BIN_OPERATORS[i]; ++i)
+                {
+                    if(wcscmp(str, BIN_OPERATORS[i]) == 0)
+                    {
+                        push_node(main, new_node(BINARY, str, pos));
+                        temp++;
+                    }
                 }
             }
             if(!temp)

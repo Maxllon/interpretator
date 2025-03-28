@@ -1,4 +1,4 @@
-#include"interpretator.h"
+/*#include"interpretator.h"
 #include"arena.h"
 
 #define EXIT1 {arena_destroy(ARENA1); EXIT;}
@@ -167,10 +167,6 @@ Object* get_object(Object* obj)
     }
     return ret_obj;
 }
-
-/* 
-точка входа в интерпретацию
-*/
 void interpretate(Expretion* expr, Arena* arena)
 {
     ARENA1 = arena;
@@ -505,5 +501,4 @@ Object* interpretate_index(Expretion* expr)
         }        
     }
     return obj;
-}
-
+}*/

@@ -1,4 +1,4 @@
-#ifndef INTERPRETATOR_H
+/*#ifndef INTERPRETATOR_H
 #define INTERPRETATOR_H
 
 #include"includes.h"
@@ -124,4 +124,4 @@ Object* interpetate_func(Expretion* expr);
 Object* interpretate_call(Expretion* expr);
 
 
-#endif
+#endif*/
