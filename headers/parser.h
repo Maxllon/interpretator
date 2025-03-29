@@ -62,6 +62,7 @@ typedef struct Instruction Instruction;
 struct Expression
 {
     expr_kind kind;
+    VEC_2 pos;
     union expr
     {
         Seque* seque;
@@ -183,7 +184,7 @@ struct Instruction
 
 
 //create expr functions
-Expression* create_empty_expr(expr_kind kind);
+Expression* create_empty_expr(VEC_2 pos, expr_kind kind);
 
 Seque* create_empty_seque();
 Call* create_empty_call();

@@ -3,9 +3,10 @@
 static tk_node* tk_list = NULL;
 static Arena* ARENA = NULL;
 
-Expression* create_empty_expr(expr_kind kind)
+Expression* create_empty_expr(VEC_2 pos, expr_kind kind)
 {
     Expression* expr = arena_alloc(ARENA, sizeof(Expression));
+    expr->pos = pos;
     expr->kind = kind;
     switch(kind) 
     {
@@ -237,7 +238,7 @@ Expression* parse(tk_node* main, Arena* arena)
     ARENA = arena;
     tk_list = main;
     tk_list = tk_list->next;
-    Expression* expr = create_empty_expr(SEQUE_EXPR);
+    Expression* expr = create_empty_expr(tk_list->pos, SEQUE_EXPR);
     while (tk_list->kind != END)
     {
         bm_vector_push(expr->seque->expressions, parse_expr());
@@ -286,24 +287,24 @@ Expression* parse_atom()
             if(wcscmp(tk_list->value, L"ПУСТОТА") == 0)
             {
                 tk_list=tk_list->next;
-                return create_empty_expr(VOID_EXPR);
+                return create_empty_expr(tk_list->pos, VOID_EXPR);
             }
             wprintf(L"Парсинг: Неизвестное ключевое слово: %ls\n", tk_list->value);
             EXIT;
             break;
         case NUMBER:
-            expr = create_empty_expr(NUMBER_EXPR);
+            expr = create_empty_expr(tk_list->pos, NUMBER_EXPR);
             expr->number->value = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
             wcscpy(expr->number->value, tk_list->value);
             break;
         case STRING:
-            expr = create_empty_expr(STRING_EXPR);
+            expr = create_empty_expr(tk_list->pos, STRING_EXPR);
             expr->string->value = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
             wcscpy(expr->string->value, tk_list->value);
             break;
         case VARIABLE:
             if(tk_list->next->kind != END) if (wcscmp(tk_list->next->value, L"(") == 0) return parse_call();
-            expr = create_empty_expr(VARIABLE_EXPR);
+            expr = create_empty_expr(tk_list->pos, VARIABLE_EXPR);
             expr->variable->name = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
             wcscpy(expr->variable->name, tk_list->value);
             break;
@@ -325,7 +326,7 @@ Expression* mb_binary(Expression* left, size_t priority)
         {
             tk_list = tk_list->next;
             Expression* right = mb_binary(mb_index(parse_atom()), his_prior);
-            Expression* expr = create_empty_expr(BINARY_EXPR);
+            Expression* expr = create_empty_expr(tk_list->pos, BINARY_EXPR);
             expr->binary->left = left;
             expr->binary->right = right;
             expr->binary->op = arena_alloc(ARENA, wcslen(op)*2 + 2);
@@ -343,7 +344,7 @@ Expression* mb_index(Expression* expr)
     {
         tk_list = tk_list->next;
 
-        Expression* index = create_empty_expr(INDEX_EXPR);
+        Expression* index = create_empty_expr(tk_list->pos, INDEX_EXPR);
         index->index->destination = expr;
         index->index->index = parse_expr();
         skip(L"]");
@@ -356,7 +357,7 @@ Expression* mb_index(Expression* expr)
 Expression* parse_seque()
 {
     tk_list = tk_list->next;
-    Expression* expr = create_empty_expr(SEQUE_EXPR);
+    Expression* expr = create_empty_expr(tk_list->pos, SEQUE_EXPR);
 
     while (wcscmp(tk_list->value, L"кц") != 0)
     {
@@ -373,7 +374,7 @@ Expression* parse_seque()
 }
 Expression* parse_call()
 {
-    Expression* expr = create_empty_expr(CALL_EXPR);
+    Expression* expr = create_empty_expr(tk_list->pos, CALL_EXPR);
     expr->call->name = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
     wcscpy(expr->call->name, tk_list->value);
 
@@ -396,7 +397,7 @@ Expression* parse_call()
 Expression* parse_if()
 {
     tk_list = tk_list->next;
-    Expression* expr = create_empty_expr(IF_EXPR);
+    Expression* expr = create_empty_expr(tk_list->pos, IF_EXPR);
     expr->_if->cond = parse_expr();
     skip(L":");
     expr->_if->then = parse_expr();
@@ -415,7 +416,7 @@ Expression* parse_array()
 {
     tk_list = tk_list->next;
 
-    Expression* expr = create_empty_expr(ARRAY_EXPR);
+    Expression* expr = create_empty_expr(tk_list->pos, ARRAY_EXPR);
 
     while(wcscmp(tk_list->value, L"}") != 0)
     {
@@ -433,7 +434,7 @@ Expression* parse_array()
 
 Expression* parse_boolean()
 {
-    Expression* expr = create_empty_expr(BOOLEAN_EXPR);
+    Expression* expr = create_empty_expr(tk_list->pos, BOOLEAN_EXPR);
     expr->boolean->value = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
     wcscpy(expr->boolean->value, tk_list->value);
     tk_list = tk_list->next;
@@ -442,7 +443,7 @@ Expression* parse_boolean()
 
 Expression* parse_unary()
 {
-    Expression* expr = create_empty_expr(UNARY_EXPR);
+    Expression* expr = create_empty_expr(tk_list->pos, UNARY_EXPR);
     expr->unary->op = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
     wcscpy(expr->unary->op, tk_list->value);
     tk_list=tk_list->next;
@@ -454,7 +455,7 @@ Expression* parse_while()
 {
     tk_list = tk_list->next;
 
-    Expression* expr = create_empty_expr(WHILE_EXPR);
+    Expression* expr = create_empty_expr(tk_list->pos, WHILE_EXPR);
     expr->_while->cond = parse_expr();
     skip(L":");
     expr->_while->body = parse_expr();
@@ -465,7 +466,7 @@ Expression* parse_foreach()
 {
     tk_list = tk_list->next;
 
-    Expression* expr = create_empty_expr(FOREACH_EXPR);
+    Expression* expr = create_empty_expr(tk_list->pos, FOREACH_EXPR);
     expr->foreach->var = parse_expr();
     skip(L"из");
     expr->foreach->list = parse_expr();
@@ -477,7 +478,7 @@ Expression* parse_foreach()
 Expression* parse_func()
 {
     tk_list = tk_list->next;
-    Expression* expr = create_empty_expr(FUNC_EXPR);
+    Expression* expr = create_empty_expr(tk_list->pos, FUNC_EXPR);
 
     expr->func->name = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
     wcscpy(expr->func->name, tk_list->value);
@@ -503,14 +504,14 @@ Expression* parse_func()
 Expression* parse_return()
 {
     tk_list = tk_list->next;
-    Expression* expr = create_empty_expr(RETURN_EXPR);
+    Expression* expr = create_empty_expr(tk_list->pos, RETURN_EXPR);
     expr->_return->value = parse_expr();
     return expr;
 }
 
 Expression* parse_instruction()
 {
-    Expression* expr = create_empty_expr(INSTRUCTION_EXPR);
+    Expression* expr = create_empty_expr(tk_list->pos, INSTRUCTION_EXPR);
     expr->instruction->name = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
     wcscpy(expr->instruction->name, tk_list->value);
     tk_list=tk_list->next;
