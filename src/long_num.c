@@ -259,6 +259,53 @@ big_num* mult_big(big_num* a, big_num* b, Arena* arena)
     return res;
 }
 
+big_num* div_big(big_num* a, big_num* b, Arena* arena)
+{
+    big_num* res = big_num_init(arena);
+    big_num* zero = big_num_from_str(L"0", arena);
+    if(!compare_big(b, zero)) return NULL;
+    if(!compare_big(a, zero)) return zero;
+    if(a->is_negative != b->is_negative) res->is_negative = 1;
+
+    size_t cnt_digits = 0;
+
+    for(; compare_big(mult_big(res, b, arena), a) == -1; cnt_digits++)
+    {
+        ull* ptr = arena_alloc(arena, sizeof(ull));
+        *ptr = 0;
+        bm_vector_change(res->digits, cnt_digits, ptr);
+        ptr = arena_alloc(arena, sizeof(ull));
+        *ptr = 1;
+        bm_vector_change(res->digits, cnt_digits+1, ptr);
+    }
+    if(cnt_digits>1) bm_vector_change(res->digits, cnt_digits, NULL);
+    else
+    {
+        ull* ptr = arena_alloc(arena, sizeof(ull));
+        *ptr = 0;
+        bm_vector_change(res->digits, cnt_digits, ptr);
+    }
+    for(ll i = cnt_digits-1; i!=-1;--i)
+    {
+        ull* ptr = arena_alloc(arena, sizeof(ull));
+        bm_vector_change(res->digits, i, ptr);
+        ull l = 0;
+        ull r = BASE;
+        while(r-l > 1)
+        {
+            ull m = (l+r)/2;
+            *ptr = m;
+            if(compare_big(mult_big(res, b, arena), a) != 1)
+            {
+                l = m;
+            }
+            else r = m;
+        }
+        *ptr = l;
+    }
+    return res;
+}
+
 int compare_big(big_num* a, big_num* b)
 {
     int res = 0;
