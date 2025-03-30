@@ -7,6 +7,7 @@
 #include"parser.h"
 #include"arena.h"
 #include"interpretator.h"
+#include"long_num.h"
 
 int main(int argc, char *argv[])
 {
@@ -20,6 +21,12 @@ int main(int argc, char *argv[])
     if(out_file) wprintf(L"%ls\n\n\n\n",file);
     tk_node* main = lexing(file, ARENA);
     Expression* expr = parse(main, ARENA);
+
+    big_num* a = big_num_from_str(L"0.12", ARENA);
+    big_num* b = big_num_from_str(L"100", ARENA);
+    big_num* c = mult_big(a, b, ARENA);
+    wchar* str = str_from_big_num(c, ARENA);
+    wprintf(L"%ls\n", str);
 
 /*   interpretate(expr, ARENA);
 */

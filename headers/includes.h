@@ -17,6 +17,10 @@
 #define INDENT 4
 #define TOKEN_NAME_BUFFER 100
 #define ARENA_BLOCK_SIZE 10000
+#define ull unsigned long long
+#define ll long long
+#define BASE ((ull)1e9)
+#define BASE_BITS 9
 
 typedef int Errno;
 
