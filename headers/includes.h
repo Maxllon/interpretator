@@ -16,7 +16,7 @@
 #define EXPAN ".txt"
 #define INDENT 4
 #define TOKEN_NAME_BUFFER 100
-#define ARENA_BLOCK_SIZE 100000
+#define REGION_DEFAULT_CAPACITY (1024)
 #define ull unsigned long long
 #define ll long long
 #define BASE ((ull)1e9)

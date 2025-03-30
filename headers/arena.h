@@ -3,16 +3,28 @@
 
 #include"includes.h"
 
-typedef struct Arena
-{
-    char* region;
-    size_t index;
-    size_t size;
-}Arena;
+typedef struct Arena Arena;
+typedef struct Region Region;
 
+struct Region
+{
+    size_t size;
+    char* data;
+    char* head;
+    size_t used;
+    Region* next;
+};
+struct Arena
+{
+    Region* begin;
+    Region* end;
+};
+
+Region* new_region(size_t size);
 Arena* arena_create();
-void* arena_alloc(Arena*, size_t);
-void* arena_realloc(Arena*, void*, size_t);
-void arena_destroy(Arena*);
+void* arena_alloc(Arena* arena, size_t size);
+void* arena_realloc(Arena* arena, void* loc, size_t size);
+void arena_destroy(Arena* arena);
+
 
 #endif

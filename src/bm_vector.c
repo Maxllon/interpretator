@@ -48,4 +48,3 @@ void bm_vector_change(bm_vector* vec, size_t index, void* item)
     }
     vec->data[index] = item;
 }
-

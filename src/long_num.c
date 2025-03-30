@@ -53,12 +53,13 @@ big_num* big_num_from_str(const wchar* str, Arena* arena)
         }
     }
     bm_vector_change(b_num->digits, 0, res);
-    for(size_t i=dot_pos-1, cnt=1;i!=-1;cnt++)
+    for(ll i=dot_pos-1, cnt=1;i!=-1;cnt++)
     {
+        wprintf(L"%llu\n",*(ull*) bm_vector_at(b_num->digits, 0));
         res = arena_alloc(arena, sizeof(ull));
         *res = 0;
         ull mult = 1;
-        for(size_t k=0;i!=-1 && k<BASE_BITS;--i,++k)
+        for(ull k=0;i!=-1 && k<BASE_BITS;--i,++k)
         {     
             *res += (str[i]-L'0')*mult;
             mult*=10;
@@ -95,6 +96,8 @@ static wchar* byte_to_string(ull num, Arena* arena)
     int cnt = BASE_BITS;
     while(num!=0)
     {
+        wprintf(L"%llu\n",num);
+        system("pause");
         *temp = L'0' + num%10;
         temp++;
         num/=10;
@@ -112,6 +115,7 @@ static wchar* byte_to_string(ull num, Arena* arena)
 wchar* str_from_big_num(big_num* b_num, Arena* arena)
 {
     size_t len = 0;
+    wprintf(L"%llu\n", *(ull*)bm_vector_at(b_num->digits, 0));
     for(;bm_vector_at(b_num->digits, len) != NULL; ++len);
     wchar* res = arena_alloc(arena, sizeof(wchar) * len * BASE_BITS + 4);
     wchar* temp = res;
@@ -203,7 +207,11 @@ big_num* sub_big(big_num* a, big_num* b, Arena* arena)
         a = b;
         b = temp;
     }
-
+    wprintf(L"here\n");
+    wprintf(L"%ls\n", str_from_big_num(a,arena));
+    wprintf(L"here\n");
+    wprintf(L"%ls\n", str_from_big_num(b,arena));
+    wprintf(L"here\n");
 
     int cmp = compare_big(a, b);
     if(cmp == -1)
@@ -213,24 +221,25 @@ big_num* sub_big(big_num* a, big_num* b, Arena* arena)
         a = b;
         b = temp;
     }
+    wprintf(L"%ls\n", str_from_big_num(a,arena));
+    wprintf(L"%ls\n", str_from_big_num(b,arena));
 
     ull borrow = 0;
     for (size_t i = 0; (ull*)bm_vector_at(a->digits, i)!=NULL || borrow; ++i) 
     {
         ull a_digit = ((ull*)bm_vector_at(a->digits, i)!=NULL) ? *(ull*)bm_vector_at(a->digits, i) : 0;
         ull b_digit = ((ull*)bm_vector_at(b->digits, i)!=NULL) ? *(ull*)bm_vector_at(b->digits, i) : 0;
-
         ll diff = (ll)a_digit - (ll)b_digit - (ll)borrow;
         borrow = 0;
 
-        if (diff < 0) 
+        if (a_digit<b_digit) 
         {
-            diff += BASE;
+            a_digit+= BASE;
             borrow = 1;
         }
 
         ull* ptr = arena_alloc(arena, sizeof(ull));
-        *ptr = (ull)diff;
+        *ptr = a_digit-b_digit;
         bm_vector_change(res->digits, i, ptr);
     }
     return res;
