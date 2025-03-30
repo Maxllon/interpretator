@@ -157,8 +157,16 @@ big_num* sum_big(big_num* a, big_num* b, Arena* arena)
 {
     big_num* res = big_num_init(arena);
     if(a->is_negative && b->is_negative) res->is_negative = 1;
-    else if(b->is_negative) return sub_big(a, b, arena);
-    else if(a->is_negative) return sub_big(b, a, arena);
+    else if(b->is_negative)
+    {
+        b->is_negative = 0;
+        return sub_big(a, b, arena);
+    }
+    else if(a->is_negative) 
+    {
+        a->is_negative = 0;
+        return sub_big(b, a, arena);
+    }
     ull carry = 0;
     ull sum = 0;
     for(size_t i=0;(ull*)bm_vector_at(a->digits, i) != NULL || (ull*)bm_vector_at(b->digits, i) != NULL || carry;++i)
@@ -232,6 +240,7 @@ big_num* sub_big(big_num* a, big_num* b, Arena* arena)
 big_num* mult_big(big_num* a, big_num* b, Arena* arena)
 {
     big_num* res = big_num_init(arena);
+    if(a->is_negative != b->is_negative) res->is_negative = 1;
     ull carry = 0;
     for (size_t i = 0; (ull*)bm_vector_at(a->digits, i)!=NULL; ++i) 
     {
@@ -304,6 +313,23 @@ big_num* div_big(big_num* a, big_num* b, Arena* arena)
         *ptr = l;
     }
     return res;
+}
+
+big_num* div_int_big(big_num* a, big_num* b, Arena* arena)
+{
+    big_num* res = div_big(a, b, arena);
+    if(res==NULL) return res;
+    ull* ptr = arena_alloc(arena, sizeof(ull));
+    *ptr = 0;
+    bm_vector_change(res->digits, 0, ptr);
+    return res;
+}
+
+big_num* mod_big(big_num* a, big_num* b, Arena* arena)
+{
+    big_num* res = div_int_big(a, b, arena);
+    if(res==NULL) return NULL;
+    return sub_big(a, mult_big(b, res, arena), arena);
 }
 
 int compare_big(big_num* a, big_num* b)

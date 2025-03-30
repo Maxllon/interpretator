@@ -24,6 +24,7 @@ big_num* sum_big(big_num* a, big_num* b, Arena* arena);
 big_num* sub_big(big_num* a, big_num* b, Arena* arena);
 big_num* mult_big(big_num* a, big_num* b, Arena* arena);
 big_num* div_big(big_num* a, big_num* b, Arena* arena);
+big_num* div_int_big(big_num* a, big_num* b, Arena* arena);
 big_num* mod_big(big_num* a, big_num* b, Arena* arena);
 
 int compare_big(big_num* a, big_num* b);

@@ -22,9 +22,9 @@ int main(int argc, char *argv[])
     tk_node* main = lexing(file, ARENA);
     Expression* expr = parse(main, ARENA);
 
-    big_num* a = big_num_from_str(L"412412141251251251251251", ARENA);
-    big_num* b = big_num_from_str(L"9", ARENA);
-    big_num* c = div_big(a, b, ARENA);
+    big_num* a = big_num_from_str(L"-2.1", ARENA);
+    big_num* b = big_num_from_str(L"-5", ARENA);
+    big_num* c = sub_big(a, b, ARENA);
     wchar* str = str_from_big_num(c, ARENA);
     wprintf(L"%ls\n", str);
 
