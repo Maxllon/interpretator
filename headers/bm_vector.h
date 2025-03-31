@@ -4,7 +4,7 @@
 #include"includes.h"
 #include"arena.h"
 
-#define BM_VECTOR_BLOCK 1000
+#define BM_VECTOR_BLOCK 128
 
 typedef struct bm_vector bm_vector;
 struct bm_vector
