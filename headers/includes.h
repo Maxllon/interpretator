@@ -10,6 +10,14 @@
 #include<locale.h>
 #include<errno.h>
 #include<math.h>
+#include<time.h>
+
+typedef struct pair pair;
+struct pair
+{
+    void* first;
+    void* second;
+};
 
 //constants
 #define wchar wchar_t
