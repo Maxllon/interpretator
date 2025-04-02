@@ -8,6 +8,7 @@
 #include"arena.h"
 #include"interpretator.h"
 #include"long_num.h"
+#include"bmpl_string.h"
 
 int main(int argc, char *argv[])
 {
@@ -20,11 +21,23 @@ int main(int argc, char *argv[])
     if(out_file) wprintf(L"%ls\n\n\n\n",file);
     tk_node* main = lexing(file, ARENA);
     Expression* expr = parse(main, ARENA);
-    big_num* a = big_num_from_str(L"-41092875019278509178252472217491224172572715712957175174912241725727157129571759275971295724722174912749117491224172572715712957175927597129572472217491274919275971295724722174912749182749128745981725792719571295717592759712957749182749128745981725792719571295717592759712957.1", ARENA);
-    big_num* b = big_num_from_str(L"-0.33333", ARENA);
-    big_num* c = div_big(a, b, ARENA);
-    wchar* str = str_from_big_num(c, ARENA);
-    wprintf(L"%ls\n", str);
+
+    bmpl_string* str1 = bmpl_string_from_str(L"бананчик", ARENA);
+    bmpl_string* str2 = bmpl_string_from_str(L" и арбуз ", ARENA);
+    bmpl_string* str3 = bmpl_string_cancat(str1, str2, ARENA);
+    big_num* a = big_num_from_str(L"0", ARENA);
+    big_num* b = big_num_from_str(L"8", ARENA);
+    big_num* c = big_num_from_str(L"7", ARENA);
+    bmpl_string* str4 = bmpl_string_mult(str3, b, ARENA);
+    bmpl_string* str5 = slice(str4, a, b, ARENA);
+    bmpl_string* str6 = bmpl_string_copy(str5, ARENA);
+    bmpl_string* str7 = slice(str1,a, c,ARENA );
+    bmpl_string* str9 = bmpl_string_from_str(L"в ", ARENA);
+    bmpl_string* str8 = bmpl_string_cancat(str7, str9, ARENA);
+    wprintf(L"%ls\n", str6->string);
+    wprintf(L"%ls\n", str8->string);
+    wprintf(L"%d\n", bmpl_string_equal(str6, str8));
+
 
 /*   interpretate(expr, ARENA);
 */
