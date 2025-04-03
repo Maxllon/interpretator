@@ -33,9 +33,16 @@ int main(int argc, char *argv[])
         dk_node* R = dk_new_node(h, ARENA);
         root = dk_merge(root, R);
     }
-    pair p = dk_split(root, 14);
-    dk_output(p.first);
-
+    size_t* p = arena_alloc(ARENA, sizeof(size_t));
+    *p = 412;
+    dk_node* res = dk_add(root, dk_new_node(p, ARENA), 3);
+    dk_output(res);
+    wprintf(L"\n");
+    res = dk_erase(res, 4);
+    dk_output(res);
+    wprintf(L"\n");
+    p = dk_get_el(res, 8);
+    wprintf(L"%llu\n", *p);
 /*   interpretate(expr, ARENA);
 */
     arena_destroy(ARENA);

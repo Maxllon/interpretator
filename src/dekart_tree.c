@@ -68,6 +68,26 @@ dk_node* dk_merge(dk_node* L, dk_node* R)
     return res;
 }
 
+dk_node* dk_add(dk_node* root, dk_node* T , size_t pos)
+{
+    pair p = dk_split(root, pos);
+    dk_node* res = dk_merge(p.first, T);
+    res = dk_merge(res, p.second);
+    return res;
+}
+void* dk_get_el(dk_node* root, size_t pos)
+{
+    pair p = dk_split(root, pos);
+    p = dk_split(p.second, 1);
+    return ((dk_node*)p.first)->value;
+}
+dk_node* dk_erase(dk_node* root, size_t pos)
+{
+    pair p = dk_split(root, pos);
+    pair p2 = dk_split(p.second, 1);
+    return dk_merge(p.first, p2.second);
+}
+
 void dk_output(dk_node* root)
 {
     if(!root) return;
