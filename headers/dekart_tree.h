@@ -28,8 +28,6 @@ dk_node* dk_add(dk_node* root, dk_node* T , size_t pos);
 void* dk_get_el(dk_node* root, size_t pos);
 dk_node* dk_erase(dk_node* root, size_t key);
 
-bm_vector* dk_get_static(dk_node* root);
-
 void dk_output(dk_node* root);
 
 #endif

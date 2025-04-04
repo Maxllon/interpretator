@@ -37,7 +37,7 @@ struct bmpl_object
 };
 
 bmpl_object* new_object(bmpl_object_types type, void* value, Arena* arena);
-bmpl_object* copy_object(bmpl_object* src);
+bmpl_object* copy_object(bmpl_object* src, Arena* arena);
 
 typedef struct module module;
 typedef struct variable variable;
@@ -52,8 +52,13 @@ variable* new_variable(bmpl_string* name, bmpl_object* value, Arena* arena);
 
 struct module
 {
-
+    dk_node* variables;
+    module* parent;
 };
+
+module* new_module(Arena* arena, module* parent);
+bmpl_object* find_var(module* main, bmpl_string* str);
+void add_var(module* main, variable* var, Arena* arena);
 
 
 #endif
