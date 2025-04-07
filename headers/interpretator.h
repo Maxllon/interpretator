@@ -1,127 +1,74 @@
-/*#ifndef INTERPRETATOR_H
+#ifndef INTERPRETATOR_H
 #define INTERPRETATOR_H
 
 #include"includes.h"
-#include"parcer.h"
-#include"bm_vector.h"
 #include"arena.h"
+#include"parser.h"
+#include"bmpl_object.h"
 
-typedef struct Expretion Expretion;
+void interpretate(Expression* expr, Arena* arena);
 
-typedef enum
-{
-    FUNC_OBJ = 0,
-    CALL_OBJ,
-    IF_OBJ,
+bmpl_object* interpretate_atom(Expression* expr);
 
-    INTEGER_OBJ,
-    FLOAT_OBJ,
-    STRING_OBJ,
-    BOOLEAN_OBJ,
+/*VOID_EXPR = 0,
 
-    BINARY_OBJ,
-    LIST_OBJ,
-    INDEX_OBJ,
+SEQUE_EXPR,
+CALL_EXPR,
+IF_EXPR,
 
-    VOID_OBJ,
-    BREAK_OBJ,
-    RETURN_OBJ,
+VARIABLE_EXPR,
 
-    VARIABLE_OBJ
-}OBJECT_KIND;
+ARRAY_EXPR,
+BOOLEAN_EXPR,
+STRING_EXPR,
+NUMBER_EXPR,
+INDEX_EXPR,
 
-typedef struct Object Object;
-typedef struct Environment Environment;
+BINARY_EXPR,
+UNARY_EXPR,
 
-typedef struct Var_Obj Var_Obj;
-typedef struct Func_Obj Func_Obj;
-typedef struct Index_Obj Index_Obj;
+WHILE_EXPR,
+FOREACH_EXPR,
 
-struct Environment
-{
-    bm_vector* variables;
-    Environment* parent;
-};
+FUNC_EXPR,
+RETURN_EXPR,
 
-struct Var_Obj
-{
-    wchar* name;
-    Object* value;
-};
+INSTRUCTION_EXPR*/
 
-struct Func_Obj
-{
-    bm_vector* arguments;
-    Expretion* expr;
-};
-
-struct Index_Obj
-{
-    Object* list;
-    Object* index;
-};
-
-struct Object
-{
-    OBJECT_KIND kind;
-    union obj
-    {
-        long long int_t;
-        long double float_t;
-        int bool_t;
-        wchar* str;
-
-        bm_vector* list;
-
-        Var_Obj* var;
-        Func_Obj* func;
-        Index_Obj* index;
-    };
-    
-};
+bmpl_object* get_object_type(bmpl_object_types type);
 
 
-wchar* out_type(Object* obj);
+bmpl_object* interpretate_void(Expression* expr);
 
-Environment* create_empty_environment(Environment* parent);
+bmpl_object* interpretate_seque(Expression* expr);
+bmpl_object* interpretate_call(Expression* expr);
+bmpl_object* interpretate_if(Expression* expr);
 
-Object* find_var(wchar* name, Environment* envi);
-void set_var(Object* variable);
+bmpl_object* interpretate_var(Expression* expr);
 
-//возвращает сам объект или его копию
-Object* get_object(Object* obj);
+bmpl_object* interpretate_array(Expression* expr);
+bmpl_object* interpretate_bool(Expression* expr);
+bmpl_object* interpretate_str(Expression* expr);
+bmpl_object* interpretate_num(Expression* expr);
+bmpl_object* interpretate_index(Expression* expr);
 
+bmpl_object* interpretate_binary(Expression* expr);
+bmpl_object* interpretate_unary(Expression* expr);
 
-void interpretate(Expretion* expr, Arena* arena);
+bmpl_object* interpretate_while(Expression* expr);
+bmpl_object* interpretate_foreach(Expression* expr);
 
-Object* interpretate_atom(Expretion* expr);
+bmpl_object* interpretate_func(Expression* expr);
+bmpl_object* interpretate_return(Expression* expr);
 
+bmpl_object* interpretate_instryction(Expression* expr);
 
-Object* interpretate_var(Expretion* expr);
+//операторы
 
-//типы данных
-Object* interpetate_num(Expretion* expr);
-Object* interpretate_str(Expretion* expr);
-Object* interperate_bool(Expretion* expr);
-Object* interpretate_list(Expretion* expr);
-Object* interpretate_void(Expretion* expr);
+bmpl_object* assign(Expression* expr);
 
-//работа с типами
-Object* interpretate_bin(Expretion* expr);
-Object* interpretate_index(Expretion* expr);
+bmpl_object* bin_num_num(wchar* op, big_num* left, big_num* right);
+bmpl_object* bin_str_str(wchar* op, bmpl_string* left, bmpl_string* right);
+bmpl_object* bin_str_num(wchar* op, bmpl_string* left, bmpl_string* right);
 
-//ветвления
-Object* interpetate_if(Expretion* expr);
-
-//циклы
-Object* interpretate_break(Expretion* expr);
-Object* interpetate_while(Expretion* expr);
-Object* interpretate_foreach(Expretion* expr);
-
-//функции
-Object* interpretate_return(Expretion* expr);
-Object* interpetate_func(Expretion* expr);
-Object* interpretate_call(Expretion* expr);
-
-
-#endif*/
+#endif

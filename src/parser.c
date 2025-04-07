@@ -200,7 +200,6 @@ static const op_priority PRIORITY[] =
     {L"\%", 6},
     {L"//", 6},
     
-    {L"^", 7},
     {NULL, 0}
 };
 

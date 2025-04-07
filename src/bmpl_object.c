@@ -23,6 +23,12 @@ bmpl_object* new_object(bmpl_object_types type, void* value, Arena* arena)
         case LIST_OBJ:
             obj->root = value;
             break;
+        case INSTRYCTION_OBJ:
+            obj->str = value;
+            break;
+        case RETURN_OBJ:
+            obj->ret = value;
+            break;
         default:
             wprintf(L"Интерпретатор: неизвестный тип объекта\n");
             return NULL;
@@ -62,6 +68,11 @@ bmpl_object* copy_object(bmpl_object* src, Arena* arena)
         case LIST_OBJ:
             obj->root = dk_copy(src->root, arena);
             break;
+        case INSTRYCTION_OBJ:
+            obj->instr_name = bmpl_string_copy(src->str, arena);
+            break;
+        case RETURN_OBJ:
+            obj->ret = copy_object(obj->ret, arena);
         default:
             wprintf(L"Интерпретатор: неизвестный тип объекта\n");
             return NULL;
@@ -85,15 +96,15 @@ variable* new_variable(bmpl_string* name, bmpl_object* value, Arena* arena)
     return var;
 }
 
-bmpl_object* find_var(module* main, bmpl_string* str)
+variable* find_var(module* main, bmpl_string* str)
 {
     if(!main) return NULL;
+    if(main->variables == NULL) return NULL;
     for(size_t i = 0; i<main->variables->sons; ++i)
     {
         variable* var = dk_get_el(main->variables, i);
-        if(bmpl_string_equal(var, str)) return var->value;
+        if(bmpl_string_equal(var->name, str)) return var;
     }
-    if(main->parent) return find_var(main->parent, str);
     return NULL;
 }
 

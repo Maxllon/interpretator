@@ -24,27 +24,7 @@ int main(int argc, char *argv[])
     tk_node* main = lexing(file, ARENA);
     Expression* expr = parse(main, ARENA);
 
-
-    dk_node* root = NULL;
-    for(size_t i=1;i<=15;++i)
-    {
-        size_t* h = arena_alloc(ARENA, sizeof(size_t));
-        *h = i;
-        dk_node* R = dk_new_node(h, ARENA);
-        root = dk_merge(root, R);
-    }
-    size_t* p = arena_alloc(ARENA, sizeof(size_t));
-    *p = 412;
-    dk_node* res = dk_add(root, dk_new_node(p, ARENA), 3);
-    dk_output(res);
-    wprintf(L"\n");
-    res = dk_erase(res, 4);
-    dk_output(res);
-    wprintf(L"\n");
-    p = dk_get_el(res, 8);
-    wprintf(L"%llu\n", *p);
-/*   interpretate(expr, ARENA);
-*/
+    interpretate(bm_vector_at(expr->seque->expressions, 0), ARENA);
     arena_destroy(ARENA);
     system("pause");
     return 0;

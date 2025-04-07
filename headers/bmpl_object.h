@@ -15,7 +15,9 @@ typedef enum
     FUNC_OBJ,
     STR_OBJ,
     BOOL_OBJ,
-    LIST_OBJ
+    LIST_OBJ,
+    INSTRYCTION_OBJ,
+    RETURN_OBJ
 
 }bmpl_object_types;
 
@@ -33,6 +35,8 @@ struct bmpl_object
         func_object* func;
         int _bool;
         dk_node* root;
+        bmpl_string* instr_name;
+        bmpl_object* ret;
     };
 };
 
@@ -57,7 +61,7 @@ struct module
 };
 
 module* new_module(Arena* arena, module* parent);
-bmpl_object* find_var(module* main, bmpl_string* str);
+variable* find_var(module* main, bmpl_string* str);
 void add_var(module* main, variable* var, Arena* arena);
 
 
