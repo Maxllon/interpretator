@@ -230,6 +230,12 @@ big_num* sub_big(big_num* a, big_num* b, Arena* arena)
         *ptr = a_digit-b_digit;
         bm_vector_change(res->digits, i, ptr);
     }
+    size_t i;
+    for(i = 1;(ull*)bm_vector_at(res->digits, i+1) != NULL; ++i);
+    for(;*(ull*)bm_vector_at(res->digits, i) == 0 && i > 1; --i)
+    {
+        bm_vector_change(res->digits, i, NULL);
+    }
     return res;
 
 }
