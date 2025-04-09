@@ -349,3 +349,10 @@ int compare_big(big_num* a, big_num* b)
     }
     return res;
 }
+int compare_big_normal(big_num* a, big_num* b)
+{
+    if(a->is_negative != b->is_negative) return a->is_negative ? -1 : 1;
+    int res = compare_big(a, b);
+    if(a->is_negative) res*=-1;
+    return res;
+}

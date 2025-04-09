@@ -28,5 +28,6 @@ big_num* div_int_big(big_num* a, big_num* b, Arena* arena);
 big_num* mod_big(big_num* a, big_num* b, Arena* arena);
 
 int compare_big(big_num* a, big_num* b);
+int compare_big_normal(big_num* a, big_num* b);
 
 #endif

@@ -15,6 +15,7 @@ bmpl_object* new_object(bmpl_object_types type, void* value, Arena* arena)
             obj->str = value;
             break;
         case BOOL_OBJ:
+            if(value == NULL) break;
             obj->_bool = *(int*)value;
             break;
         case FUNC_OBJ:

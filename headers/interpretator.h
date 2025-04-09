@@ -69,6 +69,6 @@ bmpl_object* assign(Expression* expr);
 
 bmpl_object* bin_num_num(wchar* op, big_num* left, big_num* right);
 bmpl_object* bin_str_str(wchar* op, bmpl_string* left, bmpl_string* right);
-bmpl_object* bin_str_num(wchar* op, bmpl_string* left, bmpl_string* right);
+bmpl_object* bin_str_num(wchar* op, bmpl_string* left, big_num* right);
 
 #endif
