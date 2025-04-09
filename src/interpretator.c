@@ -9,8 +9,8 @@ void interpretate(Expression* expr, Arena* arena)
     ARENA = arena;
     CURR_MODULE = new_module(arena, NULL);
     interpretate_atom(expr);
-    variable* var = find_var(CURR_MODULE, bmpl_string_from_str(L"банан", ARENA));
-    wprintf(L"%d\n", var->value->_bool);
+    variable* var = find_var(CURR_MODULE, bmpl_string_from_str(L"банан", ARENA), ARENA);
+    wprintf(L"%ls\n", str_from_big_num(var->value->num, ARENA));
 }
 
 bmpl_object* interpretate_atom(Expression* expr)
@@ -43,6 +43,39 @@ bmpl_object* interpretate_atom(Expression* expr)
     }
     return res;
 }
+/*bmpl_object* interpretate_index(Expression* expr)
+{
+    bmpl_object* num = interpretate_atom(expr->index->index);
+    if(num->type != NUM_OBJ)
+    {
+        wprintf(L"Интерпретатор: индекс может быть только числом\n");
+        EXIT;
+    }
+    if(*(size_t*)bm_vector_at(num->num->digits, 0) != 0)
+    {
+        wprintf(L"Интерпретатор: индекс не может быть дробным\n");
+        EXIT;
+    }
+    bmpl_object* dest = interpretate_atom(expr->index->destination);
+    switch(dest->type)
+    {
+        case STR_OBJ:
+            size_t pos;
+            if(num->num->is_negative) pos = dest->str->size - 
+        default:
+            wprintf(L"Обращаться по индексу можно только к спискам и строкам\n");
+            EXIT;
+    }
+}
+bmpl_object* interpretate_array(Expression* expr)
+{
+    dk_node* root = NULL;
+    for(size_t i=0;(Expression*)bm_vector_at(expr->array->expressions, i) != NULL; ++i)
+    {
+        root = dk_merge(root, dk_new_node(copy_object(interpretate_atom((Expression*)bm_vector_at(expr->array->expressions, i)), ARENA), ARENA));
+    }
+    return new_object(LIST_OBJ, root, ARENA);
+}*/
 bmpl_object* un_bool(wchar* op, int value)
 {
     int res;
@@ -85,7 +118,7 @@ bmpl_object* interpretate_bool(Expression* expr)
 }
 bmpl_object* interpretate_var(Expression* expr)
 {
-    variable* res = find_var(CURR_MODULE, bmpl_string_from_str(expr->variable->name, ARENA));
+    variable* res = find_var(CURR_MODULE, bmpl_string_from_str(expr->variable->name, ARENA), ARENA);
     if(!res)
     {
         wprintf(L"Интерпретация: не найдено переменной под именем: \"%ls\"\n", expr->variable->name);
@@ -192,7 +225,7 @@ bmpl_object* assign(Expression* expr)
     {
         bmpl_string* name = bmpl_string_from_str(expr->binary->left->variable->name, ARENA);
         bmpl_object* obj = copy_object(interpretate_atom(expr->binary->right), ARENA);
-        variable* var = find_var(CURR_MODULE, name);
+        variable* var = find_var(CURR_MODULE, name, ARENA);
         if(!var)
         {
             var = new_variable(name, obj, ARENA);

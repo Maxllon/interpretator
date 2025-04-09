@@ -97,13 +97,14 @@ variable* new_variable(bmpl_string* name, bmpl_object* value, Arena* arena)
     return var;
 }
 
-variable* find_var(module* main, bmpl_string* str)
+variable* find_var(module* main, bmpl_string* str, Arena* arena)
 {
     if(!main) return NULL;
     if(main->variables == NULL) return NULL;
-    for(size_t i = 0; i<main->variables->sons; ++i)
+    big_num* one = big_num_from_str(L"1", arena);
+    for(big_num* i = big_num_from_str(L"0", arena); compare_big(i, main->variables->sons) == -1; i = sum_big(i, one, arena))
     {
-        variable* var = dk_get_el(main->variables, i);
+        variable* var = dk_get_el(main->variables, i, arena);
         if(bmpl_string_equal(var->name, str)) return var;
     }
     return NULL;
@@ -112,5 +113,5 @@ variable* find_var(module* main, bmpl_string* str)
 void add_var(module* main, variable* var, Arena* arena)
 {
     dk_node* node = dk_new_node(var, arena);
-    main->variables = dk_merge(main->variables, node);
+    main->variables = dk_merge(main->variables, node, arena);
 }

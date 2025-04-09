@@ -61,7 +61,7 @@ struct module
 };
 
 module* new_module(Arena* arena, module* parent);
-variable* find_var(module* main, bmpl_string* str);
+variable* find_var(module* main, bmpl_string* str, Arena* arena);
 void add_var(module* main, variable* var, Arena* arena);
 
 

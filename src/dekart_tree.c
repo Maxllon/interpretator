@@ -5,23 +5,23 @@ dk_node* dk_new_node(void* value, Arena* arena)
     dk_node* root = arena_alloc(arena, sizeof(dk_node));
     root->left = NULL;
     root->right = NULL;
-    root->sons = 1;
+    root->sons = big_num_from_str(L"1", arena);
     root->prior = rand();
     root->value = value;
     return root;
 }
-size_t dk_get_size(dk_node* root)
+big_num* dk_get_size(dk_node* root, Arena* arena)
 {
-    return root ? root->sons : 0;
+    return root ? root->sons : big_num_from_str(L"0", arena);
 }
-static void upd(dk_node* root)
+static void upd(dk_node* root, Arena* arena)
 {
     if(root)
     {
-        root->sons = dk_get_size(root->left) + dk_get_size(root->right) + 1;
+        root->sons = sum_big(sum_big(dk_get_size(root->left, arena), dk_get_size(root->right, arena), arena), big_num_from_str(L"1", arena), arena);
     }
 }
-pair dk_split(dk_node* root, size_t key)
+pair dk_split(dk_node* root, big_num* key, Arena* arena)
 {
     pair res;
     if(!root)
@@ -31,61 +31,62 @@ pair dk_split(dk_node* root, size_t key)
         return res;
     }
 
-    size_t current_key = dk_get_size(root->left) + 1;
-    if(current_key <= key)
+    big_num* current_key = sum_big(dk_get_size(root->left, arena), big_num_from_str(L"1", arena), arena);
+    int cmp = compare_big(current_key, key);
+    if(cmp<=0)
     {
-        res = dk_split(root->right, key - current_key);
+        res = dk_split(root->right, sub_big(key, current_key, arena), arena);
         root->right = res.first;
         res.first = root;
     }
     else
     {
-        res = dk_split(root->left, key);
+        res = dk_split(root->left, key, arena);
         root->left = res.second;
         res.second = root;
     }
-    upd(root);
+    upd(root, arena);
     return res;
 
 }
 
-dk_node* dk_merge(dk_node* L, dk_node* R)
+dk_node* dk_merge(dk_node* L, dk_node* R, Arena* arena)
 {
     if(!L || !R) return L ? L : R;
 
     dk_node* res;
     if(L->prior > R->prior)
     {
-        L->right = dk_merge(L->right, R);
+        L->right = dk_merge(L->right, R, arena);
         res = L;
     }
     else
     {
-        R->left = dk_merge(L, R->left);
+        R->left = dk_merge(L, R->left, arena);
         res = R;
     }
-    upd(res);
+    upd(res, arena);
     return res;
 }
 
-dk_node* dk_add(dk_node* root, dk_node* T , size_t pos)
+dk_node* dk_add(dk_node* root, dk_node* T , big_num* pos, Arena* arena)
 {
-    pair p = dk_split(root, pos);
-    dk_node* res = dk_merge(p.first, T);
-    res = dk_merge(res, p.second);
+    pair p = dk_split(root, pos, arena);
+    dk_node* res = dk_merge(p.first, T, arena);
+    res = dk_merge(res, p.second, arena);
     return res;
 }
-void* dk_get_el(dk_node* root, size_t pos)
+void* dk_get_el(dk_node* root, big_num* pos, Arena* arena)
 {
-    pair p = dk_split(root, pos);
-    p = dk_split(p.second, 1);
+    pair p = dk_split(root, pos, arena);
+    p = dk_split(p.second, big_num_from_str(L"1", arena), arena);
     return ((dk_node*)p.first)->value;
 }
-dk_node* dk_erase(dk_node* root, size_t pos)
+dk_node* dk_erase(dk_node* root, big_num* pos, Arena* arena)
 {
-    pair p = dk_split(root, pos);
-    pair p2 = dk_split(p.second, 1);
-    return dk_merge(p.first, p2.second);
+    pair p = dk_split(root, pos, arena);
+    pair p2 = dk_split(p.second, big_num_from_str(L"1", arena), arena);
+    return dk_merge(p.first, p2.second, arena);
 }
 
 void dk_output(dk_node* root)
