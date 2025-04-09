@@ -68,6 +68,13 @@ big_num* big_num_from_str(const wchar* str, Arena* arena)
     return b_num;
 }
 
+big_num* big_num_from_ull(size_t num, Arena* arena)
+{
+    wchar* buff = arena_alloc(arena, sizeof(wchar) * 25);
+    swprintf(buff, 25, L"%llu", num);
+    return big_num_from_str(buff, arena);
+}
+
 static wchar_t* wcsrev_ptr(wchar_t* str) 
 {
     if (!str) return NULL;
