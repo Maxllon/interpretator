@@ -30,6 +30,12 @@ bmpl_object* interpretate_atom(Expression* expr)
         case STRING_EXPR:
             res = interpretate_str(expr);
             break;
+        case BOOLEAN_EXPR:
+            res = interpretate_bool(expr);
+            break;
+        case UNARY_EXPR:
+            res = interpretate_unary(expr);
+            break;
         default:
             wprintf(L"Интерпретация: неизвестный тип выражения: %d\n", expr->kind);
             EXIT;
@@ -37,7 +43,46 @@ bmpl_object* interpretate_atom(Expression* expr)
     }
     return res;
 }
+bmpl_object* un_bool(wchar* op, int value)
+{
+    int res;
+    if(wcscmp(L"НЕ", op) == 0)
+    {
+        res = !value;
+        return new_object(BOOL_OBJ, &res, ARENA);
+    }
 
+    wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\"", op, get_object_type(BOOL_OBJ)->str->string);
+    EXIT;
+}
+bmpl_object* un_num(wchar* op, big_num* value)
+{
+    big_num* res;
+    if(wcscmp(L"-", op) == 0)
+    {
+        res = big_num_from_str(str_from_big_num(value, ARENA), ARENA);
+        res->is_negative = !res->is_negative;
+        return new_object(NUM_OBJ, res, ARENA);
+    }
+
+    wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\"", op, get_object_type(NUM_OBJ)->str->string);
+    EXIT;
+}
+bmpl_object* interpretate_unary(Expression* expr)
+{
+    wchar* op = expr->unary->op;
+    bmpl_object* value = interpretate_atom(expr->unary->value);
+    if(value->type == BOOL_OBJ) return un_bool(op, value->_bool);
+    if(value->type == NUM_OBJ) return un_num(op, value->num);
+
+    wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\"", op, get_object_type(value->type)->str->string);
+    EXIT;
+}
+bmpl_object* interpretate_bool(Expression* expr)
+{
+    int res = wcscmp(L"Истина", expr->boolean->value) == 0;
+    return new_object(BOOL_OBJ, &res, ARENA);
+}
 bmpl_object* interpretate_var(Expression* expr)
 {
     variable* res = find_var(CURR_MODULE, bmpl_string_from_str(expr->variable->name, ARENA));
@@ -98,6 +143,27 @@ bmpl_object* bin_num_num(wchar* op, big_num* left, big_num* right)
         return new_object(BOOL_OBJ, &res, ARENA);
     }
     wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\" \"%ls\"\n", get_object_type(NUM_OBJ)->str->string, op, get_object_type(NUM_OBJ)->str->string);
+    EXIT;
+}
+bmpl_object* bin_bool_bool(wchar* op, int left, int right)
+{
+    int res;
+    if(wcscmp(L"==", op) == 0)
+    {
+        res = left == right;
+        return new_object(BOOL_OBJ, &res, ARENA);
+    }
+    if(wcscmp(L"ИЛИ", op) == 0)
+    {
+        res = left || right;
+        return new_object(BOOL_OBJ, &res, ARENA);
+    }
+    if(wcscmp(L"И", op) == 0)
+    {
+        res = left && right;
+        return new_object(BOOL_OBJ, &res, ARENA);
+    }
+    wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\" \"%ls\"\n", get_object_type(BOOL_OBJ)->str->string, op, get_object_type(BOOL_OBJ)->str->string);
     EXIT;
 }
 bmpl_object* bin_str_str(wchar* op, bmpl_string* left, bmpl_string* right)
@@ -162,6 +228,7 @@ bmpl_object* interpretate_binary(Expression* expr)
         }
         return bin_str_num(op, left->str, right->num);
     }
+    if(left->type == BOOL_OBJ && right->type == BOOL_OBJ) return bin_bool_bool(op, left->_bool, right->_bool);
     wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\" \"%ls\"\n", get_object_type(left->type)->str->string, op, get_object_type(right->type)->str->string);
     EXIT;
     return NULL;
@@ -176,6 +243,24 @@ bmpl_object* get_object_type(bmpl_object_types type)
             break;
         case STR_OBJ:
             return new_object(STR_OBJ, bmpl_string_from_str(L"СТРОКА", ARENA), ARENA);
+            break;
+        case BOOL_OBJ:
+            return new_object(STR_OBJ, bmpl_string_from_str(L"ЛОГИЧЕСКИЙ", ARENA), ARENA);
+            break;
+        case LIST_OBJ:
+            return new_object(STR_OBJ, bmpl_string_from_str(L"СПИСОК", ARENA), ARENA);
+            break;
+        case FUNC_OBJ:
+            return new_object(STR_OBJ, bmpl_string_from_str(L"ФУНКЦИЯ", ARENA), ARENA);
+            break;
+        case VOID_OBJ:
+            return new_object(STR_OBJ, bmpl_string_from_str(L"ПУСТОТА", ARENA), ARENA);
+            break;
+        case INSTRYCTION_OBJ:
+            return new_object(STR_OBJ, bmpl_string_from_str(L"ИНСТРУКЦИЯ", ARENA), ARENA);
+            break;
+        case RETURN_OBJ:
+            return new_object(STR_OBJ, bmpl_string_from_str(L"ВОЗВРАЩЕНИЕ", ARENA), ARENA);
             break;
         default:
             wprintf(L"Интерпретатор: невозможно получить тип объекта, неизвестный тип <%d>\n", type);

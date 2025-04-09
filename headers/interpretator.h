@@ -70,5 +70,11 @@ bmpl_object* assign(Expression* expr);
 bmpl_object* bin_num_num(wchar* op, big_num* left, big_num* right);
 bmpl_object* bin_str_str(wchar* op, bmpl_string* left, bmpl_string* right);
 bmpl_object* bin_str_num(wchar* op, bmpl_string* left, big_num* right);
+bmpl_object* bin_bool_bool(wchar* op, int left, int right);
+bmpl_object* bin_list_list(wchar* op, dk_node* left, dk_node* right);
+bmpl_object* bin_list_num(wchar* op, dk_node* left, big_num* right);
+
+bmpl_object* un_bool(wchar* op, int value);
+bmpl_object* un_num(wchar* op, big_num* value);
 
 #endif
