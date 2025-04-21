@@ -30,11 +30,17 @@ bmpl_object* interpretate_atom(Expression* expr)
         case STRING_EXPR:
             res = interpretate_str(expr);
             break;
+        case SEQUE_EXPR:
+            res = interpretate_seque(expr);
+            break;
         case BOOLEAN_EXPR:
             res = interpretate_bool(expr);
             break;
         case UNARY_EXPR:
             res = interpretate_unary(expr);
+            break;
+        case ARRAY_EXPR:
+            res = interpretate_array(expr);
             break;
         default:
             wprintf(L"Интерпретация: неизвестный тип выражения: %d\n", expr->kind);
@@ -42,6 +48,14 @@ bmpl_object* interpretate_atom(Expression* expr)
             break;
     }
     return res;
+}
+bmpl_object* interpretate_seque(Expression* expr)
+{
+    for(size_t i = 0; (Expression*)bm_vector_at(expr->seque->expressions, i) != NULL; ++i)
+    {
+        interpretate_atom((Expression*)bm_vector_at(expr->seque->expressions, i));
+    }
+    return new_object(VOID_OBJ, NULL, ARENA);
 }
 /*bmpl_object* interpretate_index(Expression* expr)
 {
@@ -60,22 +74,31 @@ bmpl_object* interpretate_atom(Expression* expr)
     switch(dest->type)
     {
         case STR_OBJ:
-            size_t pos;
-            if(num->num->is_negative) pos = dest->str->size - 
+            big_num* pos = num->num;
+            if(num->num->is_negative) pos = sum_big(dest->str->size, num, ARENA);
+            if(pos->is_negative || )
+            {
+                wprintf(L"Интерпретатор: индекс не может принимать отрицательное значение\n");
+                EXIT;
+            }
+            size_t ps = ull_from_big_num(pos);
+            wchar* str = arena_alloc(ARENA, sizeof(wchar)*2);
+            *str = dest
+
         default:
             wprintf(L"Обращаться по индексу можно только к спискам и строкам\n");
             EXIT;
     }
-}
+}*/
 bmpl_object* interpretate_array(Expression* expr)
 {
     dk_node* root = NULL;
     for(size_t i=0;(Expression*)bm_vector_at(expr->array->expressions, i) != NULL; ++i)
     {
-        root = dk_merge(root, dk_new_node(copy_object(interpretate_atom((Expression*)bm_vector_at(expr->array->expressions, i)), ARENA), ARENA));
+        root = dk_merge(root, dk_new_node(copy_object(interpretate_atom((Expression*)bm_vector_at(expr->array->expressions, i)), ARENA), ARENA), ARENA);
     }
     return new_object(LIST_OBJ, root, ARENA);
-}*/
+}
 bmpl_object* un_bool(wchar* op, int value)
 {
     int res;

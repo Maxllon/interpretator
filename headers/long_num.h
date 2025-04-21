@@ -20,6 +20,7 @@ big_num* big_num_init(Arena* arena);
 big_num* big_num_from_str(const wchar* str, Arena* arena);
 wchar* str_from_big_num(big_num* b_num, Arena* arena);
 big_num* big_num_from_ull(size_t num, Arena* arena);
+ull ull_from_big_num(big_num* a);
 
 big_num* sum_big(big_num* a, big_num* b, Arena* arena);
 big_num* sub_big(big_num* a, big_num* b, Arena* arena);

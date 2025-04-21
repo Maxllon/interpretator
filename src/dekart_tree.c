@@ -79,8 +79,10 @@ dk_node* dk_add(dk_node* root, dk_node* T , big_num* pos, Arena* arena)
 void* dk_get_el(dk_node* root, big_num* pos, Arena* arena)
 {
     pair p = dk_split(root, pos, arena);
-    p = dk_split(p.second, big_num_from_str(L"1", arena), arena);
-    return ((dk_node*)p.first)->value;
+    pair p2 = dk_split(p.second, big_num_from_str(L"1", arena), arena);
+    void* res = ((dk_node*)p2.first)->value;
+    dk_merge(p.first, dk_merge(p2.first, p2.second, arena), arena);
+    return res;
 }
 dk_node* dk_erase(dk_node* root, big_num* pos, Arena* arena)
 {

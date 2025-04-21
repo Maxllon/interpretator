@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     tk_node* main = lexing(file, ARENA);
     Expression* expr = parse(main, ARENA);
 
-    interpretate(bm_vector_at(expr->seque->expressions, 0), ARENA);
+    interpretate(expr, ARENA);
     arena_destroy(ARENA);
     system("pause");
     return 0;
