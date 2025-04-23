@@ -288,6 +288,30 @@ bmpl_object* assign(Expression* expr)
     
 }
 
+bmpl_object* bin_list_list(wchar* op, dk_node* left, dk_node* right)
+{
+    if(wcscmp(op, L"+") == 0) return new_object(LIST_OBJ, dk_merge(left, right, ARENA), ARENA);
+
+    wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\" \"%ls\"\n", get_object_type(LIST_OBJ)->str->string, op, get_object_type(LIST_OBJ)->str->string);
+    EXIT;
+}
+bmpl_object* bin_list_num(wchar* op, bmpl_object* left, big_num* right)
+{
+    if(wcscmp(op, L"*") == 0)
+    {
+        bmpl_object* res = new_object(LIST_OBJ, NULL, ARENA);
+        big_num* one = big_num_from_str(L"1", ARENA);
+        for(; !right->is_negative; right = sub_big(right, one, ARENA))
+        {
+            bmpl_object* obj = copy_object(left, ARENA);
+            res->root = dk_merge(res->root, obj->root, ARENA);
+        }
+        return res;
+    }
+    wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\" \"%ls\"\n", get_object_type(LIST_OBJ)->str->string, op, get_object_type(NUM_OBJ)->str->string);
+    EXIT;
+}   
+
 bmpl_object* interpretate_binary(Expression* expr)
 {
     wchar* op = expr->binary->op;
@@ -310,6 +334,17 @@ bmpl_object* interpretate_binary(Expression* expr)
         return bin_str_num(op, left->str, right->num);
     }
     if(left->type == BOOL_OBJ && right->type == BOOL_OBJ) return bin_bool_bool(op, left->_bool, right->_bool);
+    if(left->type == LIST_OBJ && right->type == LIST_OBJ) return bin_list_list(op, copy_object(left, ARENA)->root, copy_object(right, ARENA)->root);
+    if((left->type == NUM_OBJ || right->type == NUM_OBJ) && (left->type == LIST_OBJ || right->type == LIST_OBJ))
+    {
+        if(left->type == NUM_OBJ)
+        {
+            bmpl_object* temp = left;
+            left = right;
+            right = temp;
+        }
+        return bin_list_num(op, left, copy_object(right, ARENA)->num);
+    }
     wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\" \"%ls\"\n", get_object_type(left->type)->str->string, op, get_object_type(right->type)->str->string);
     EXIT;
     return NULL;
