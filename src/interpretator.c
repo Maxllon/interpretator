@@ -45,6 +45,12 @@ bmpl_object* interpretate_atom(Expression* expr)
         case INDEX_EXPR:
             res = interpretate_index(expr);
             break;
+        case VOID_EXPR:
+            res = new_object(VOID_OBJ, NULL, ARENA);
+            break;
+        case IF_EXPR:
+            res = interpretate_if(expr);
+            break;
         default:
             wprintf(L"Интерпретация: неизвестный тип выражения: %d\n", expr->kind);
             EXIT;
@@ -52,13 +58,32 @@ bmpl_object* interpretate_atom(Expression* expr)
     }
     return res;
 }
-bmpl_object* interpretate_seque(Expression* expr)
+bmpl_object* interpretate_if(Expression* expr)
 {
-    for(size_t i = 0; (Expression*)bm_vector_at(expr->seque->expressions, i) != NULL; ++i)
+    bmpl_object* condition = interpretate_atom(expr->_if->cond);
+    if(condition->type != BOOL_OBJ)
     {
-        interpretate_atom((Expression*)bm_vector_at(expr->seque->expressions, i));
+        wprintf(L"Интерпретатор: условие в если должно быть \"%ls\", а представлено \"%ls\"", get_object_type(BOOL_OBJ)->str->string, get_object_type(condition->type)->str->string);
+        EXIT;
+    }
+    if(condition->_bool)
+    {
+        return interpretate_atom(expr->_if->then);
+    }
+    else if(expr->_if->_else)
+    {
+        return interpretate_atom(expr->_if->_else);
     }
     return new_object(VOID_OBJ, NULL, ARENA);
+}
+bmpl_object* interpretate_seque(Expression* expr)
+{
+    bmpl_object* obj;
+    for(size_t i = 0; (Expression*)bm_vector_at(expr->seque->expressions, i) != NULL; ++i)
+    {
+        obj = interpretate_atom((Expression*)bm_vector_at(expr->seque->expressions, i));
+    }
+    return obj;
 }
 bmpl_object* interpretate_index(Expression* expr)
 {
