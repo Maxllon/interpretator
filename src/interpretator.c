@@ -10,7 +10,7 @@ void interpretate(Expression* expr, Arena* arena)
     CURR_MODULE = new_module(arena, NULL);
     interpretate_atom(expr);
     variable* var = find_var(CURR_MODULE, bmpl_string_from_str(L"банан", ARENA), ARENA);
-    wprintf(L"%ls\n", str_from_big_num(var->value->num, ARENA));
+    wprintf(L"%ls\n", var->value->str->string);
 }
 
 bmpl_object* interpretate_atom(Expression* expr)
@@ -42,6 +42,9 @@ bmpl_object* interpretate_atom(Expression* expr)
         case ARRAY_EXPR:
             res = interpretate_array(expr);
             break;
+        case INDEX_EXPR:
+            res = interpretate_index(expr);
+            break;
         default:
             wprintf(L"Интерпретация: неизвестный тип выражения: %d\n", expr->kind);
             EXIT;
@@ -57,7 +60,7 @@ bmpl_object* interpretate_seque(Expression* expr)
     }
     return new_object(VOID_OBJ, NULL, ARENA);
 }
-/*bmpl_object* interpretate_index(Expression* expr)
+bmpl_object* interpretate_index(Expression* expr)
 {
     bmpl_object* num = interpretate_atom(expr->index->index);
     if(num->type != NUM_OBJ)
@@ -71,25 +74,40 @@ bmpl_object* interpretate_seque(Expression* expr)
         EXIT;
     }
     bmpl_object* dest = interpretate_atom(expr->index->destination);
+    big_num* index;
     switch(dest->type)
     {
-        case STR_OBJ:
-            big_num* pos = num->num;
-            if(num->num->is_negative) pos = sum_big(dest->str->size, num, ARENA);
-            if(pos->is_negative || )
+        case LIST_OBJ:
+            index = num->num;
+            if(index->is_negative)
             {
-                wprintf(L"Интерпретатор: индекс не может принимать отрицательное значение\n");
+                index = sum_big(dest->root->sons, index, ARENA);
+            }
+            if(index->is_negative || compare_big(index, dest->root->sons) != -1)
+            {
+                wprintf(L"Интерпретация: индекс списка вне его размера\n");
                 EXIT;
             }
-            size_t ps = ull_from_big_num(pos);
-            wchar* str = arena_alloc(ARENA, sizeof(wchar)*2);
-            *str = dest
+            return dk_get_el(dest->root, index, ARENA);
+        case STR_OBJ:
+            index = num->num;
+            big_num* size = big_num_from_ull(dest->str->size, ARENA);
+            if(index->is_negative)
+            {
+                index = sum_big(size, index, ARENA);
+            }
+            if(index->is_negative || compare_big(index, size) != -1)
+            {
+                wprintf(L"Интерпретация: индекс строки вне ее размера\n");
+                EXIT;
+            }
+            return new_object(STR_OBJ, slice(dest->str, index, sum_big(index, big_num_from_str(L"1", ARENA), ARENA),ARENA), ARENA);
 
         default:
             wprintf(L"Обращаться по индексу можно только к спискам и строкам\n");
             EXIT;
     }
-}*/
+}
 bmpl_object* interpretate_array(Expression* expr)
 {
     dk_node* root = NULL;

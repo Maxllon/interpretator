@@ -366,8 +366,9 @@ int compare_big_normal(big_num* a, big_num* b)
 
 ull ull_from_big_num(big_num* a)
 {
-    size_t res = *(ull*)bm_vector_at(a->digits, 0);
-    if((ull*)bm_vector_at(a->digits, 1) != NULL) res+=*(ull*)bm_vector_at(a->digits, 0)*BASE;
+    if((ull*)bm_vector_at(a->digits, 3) != NULL) return BASE*BASE;
+    size_t res = *(ull*)bm_vector_at(a->digits, 1);
+    if((ull*)bm_vector_at(a->digits, 2) != NULL) res+=*(ull*)bm_vector_at(a->digits, 2)*BASE;
     if(a->is_negative) res*=-1;
     return res;
 }

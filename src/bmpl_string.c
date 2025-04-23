@@ -61,7 +61,7 @@ bmpl_string* bmpl_string_cancat(bmpl_string* a, bmpl_string* b, Arena* arena)
 bmpl_string* bmpl_string_mult(bmpl_string* a, big_num* b, Arena* arena)
 {
     bmpl_string* res = arena_alloc(arena, sizeof(bmpl_string));
-    size_t cnt =*(size_t*) bm_vector_at(b->digits, 1);
+    size_t cnt =ull_from_big_num(b);
     res->size = a->size*cnt;
     res->string = arena_alloc(arena, sizeof(wchar)*res->size + 2);
     wcscpy(res->string, a->string);
@@ -78,8 +78,8 @@ bmpl_string* bmpl_string_mult(bmpl_string* a, big_num* b, Arena* arena)
 bmpl_string* slice(bmpl_string* string, big_num* i0, big_num* i1, Arena* arena)
 {
     bmpl_string* res = arena_alloc(arena, sizeof(bmpl_string));
-    size_t start =*(size_t*) bm_vector_at(i0->digits, 1);
-    size_t end =*(size_t*) bm_vector_at(i1->digits, 1);
+    size_t start =ull_from_big_num(i0);
+    size_t end =ull_from_big_num(i1);
     res->string = arena_alloc(arena, sizeof(wchar)*(end-start) + 2);
     res->size = end-start;
     wchar* temp = res->string;
