@@ -275,6 +275,13 @@ bmpl_object* assign(Expression* expr)
         else var->value = obj;
         return obj;
     }
+    if(expr->binary->left->kind == INDEX_EXPR)
+    {
+        bmpl_object* dest = interpretate_atom(expr->binary->left);
+        bmpl_object* obj = copy_object(interpretate_atom(expr->binary->right), ARENA);
+        *dest = *obj;
+        return dest;
+    }
     wprintf(L"Интерпретация: неподходящий тип левого выражения в присваивании\n");
     EXIT;
     return NULL;
