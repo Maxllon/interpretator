@@ -21,6 +21,12 @@ typedef enum
 
 }bmpl_object_types;
 
+typedef enum
+{
+    BREAK = 0,
+    CONTINUE
+}instruction_types;
+
 typedef struct bmpl_object bmpl_object;
 typedef struct func_object func_object;
 
@@ -35,7 +41,7 @@ struct bmpl_object
         func_object* func;
         int _bool;
         dk_node* root;
-        bmpl_string* instr_name;
+        instruction_types instr;
         bmpl_object* ret;
     };
 };

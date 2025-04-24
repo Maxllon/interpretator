@@ -57,12 +57,27 @@ bmpl_object* interpretate_atom(Expression* expr)
         case FOREACH_EXPR:
             res = interpretate_foreach(expr);
             break;
+        case INSTRUCTION_EXPR:
+            res = interpretate_instryction(expr);
+            break;
         default:
             wprintf(L"Интерпретация: неизвестный тип выражения: %d\n", expr->kind);
             EXIT;
             break;
     }
     return res;
+}
+bmpl_object* interpretate_instryction(Expression* expr)
+{
+    instruction_types* type = arena_alloc(ARENA, sizeof(instruction_types));
+    if(wcscmp(L"завершить", expr->instruction->name) == 0) *type = BREAK;
+    else if(wcscmp(L"продолжить", expr->instruction->name) == 0) *type = CONTINUE;
+    else
+    {
+        wprintf(L"Интерпретация: неизвестная инструкция \"%ls\"\n", expr->instruction->name);
+        EXIT;
+    }
+    return new_object(INSTRYCTION_OBJ, type, ARENA);
 }
 bmpl_object* interpretate_while(Expression* expr)
 {
@@ -78,6 +93,11 @@ bmpl_object* interpretate_while(Expression* expr)
         }
         if(!cond->_bool) break;
         obj = interpretate_atom(expr->_while->body);
+        if(obj->type == INSTRYCTION_OBJ)
+        {
+            if(obj->instr == BREAK) return new_object(VOID_OBJ, NULL, ARENA);
+            if(obj->instr == CONTINUE) obj = new_object(VOID_OBJ, NULL, ARENA);
+        }
     }
     return obj;
 }
@@ -108,6 +128,11 @@ bmpl_object* interpretate_foreach(Expression* expr)
     {
         var->value = dk_get_el(arr->root, i, ARENA);
         obj = interpretate_atom(expr->foreach->body);
+        if(obj->type == INSTRYCTION_OBJ)
+        {
+            if(obj->instr == BREAK) return new_object(VOID_OBJ, NULL, ARENA);
+            if(obj->instr == CONTINUE) obj = new_object(VOID_OBJ, NULL, ARENA);
+        }
     }
     return obj;
 }
@@ -135,6 +160,7 @@ bmpl_object* interpretate_seque(Expression* expr)
     for(size_t i = 0; (Expression*)bm_vector_at(expr->seque->expressions, i) != NULL; ++i)
     {
         obj = interpretate_atom((Expression*)bm_vector_at(expr->seque->expressions, i));
+        if(obj->type == INSTRYCTION_OBJ) return obj;
     }
     return obj;
 }
