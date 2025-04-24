@@ -51,6 +51,12 @@ bmpl_object* interpretate_atom(Expression* expr)
         case IF_EXPR:
             res = interpretate_if(expr);
             break;
+        case WHILE_EXPR:
+            res = interpretate_while(expr);
+            break;
+        case FOREACH_EXPR:
+            res = interpretate_foreach(expr);
+            break;
         default:
             wprintf(L"Интерпретация: неизвестный тип выражения: %d\n", expr->kind);
             EXIT;
@@ -58,12 +64,59 @@ bmpl_object* interpretate_atom(Expression* expr)
     }
     return res;
 }
+bmpl_object* interpretate_while(Expression* expr)
+{
+    bmpl_object* obj;
+    bmpl_object* cond;
+    while(1)
+    {
+        cond = interpretate_atom(expr->_while->cond);
+        if(cond->type != BOOL_OBJ)
+        {
+            wprintf(L"Интерпретация: условие цикла должно быть типа \"%ls\"\n", get_object_type(BOOL_OBJ)->str->string);
+            EXIT;
+        }
+        if(!cond->_bool) break;
+        obj = interpretate_atom(expr->_while->body);
+    }
+    return obj;
+}
+bmpl_object* interpretate_foreach(Expression* expr)
+{
+    bmpl_object* obj = new_object(VOID_OBJ, NULL, ARENA);;
+    big_num* one = big_num_from_str(L"1", ARENA);
+    bmpl_object* arr = interpretate_atom(expr->foreach->list);
+    if(expr->foreach->var->kind != VARIABLE_EXPR)
+    {
+        wprintf(L"Интерпретация: в цикле for-each ожидалась переменная\n");
+        EXIT;
+    }
+    bmpl_string* name = bmpl_string_from_str(expr->foreach->var->variable->name, ARENA);
+    variable* var = find_var(CURR_MODULE, name, ARENA);
+    if(!var)
+    {
+        var = new_variable(name, obj, ARENA);
+        add_var(CURR_MODULE, var, ARENA);
+    }
+    else var->value = obj;
+    if(arr->type != LIST_OBJ)
+    {
+        wprintf(L"Интерпретация: тип \"%ls\" не итерируется\n", get_object_type(arr->type)->str->string);
+        EXIT;
+    }
+    for(big_num* i = big_num_from_str(L"0", ARENA); compare_big(i, arr->root->sons) == -1; i = sum_big(i, one, ARENA))
+    {
+        var->value = dk_get_el(arr->root, i, ARENA);
+        obj = interpretate_atom(expr->foreach->body);
+    }
+    return obj;
+}
 bmpl_object* interpretate_if(Expression* expr)
 {
     bmpl_object* condition = interpretate_atom(expr->_if->cond);
     if(condition->type != BOOL_OBJ)
     {
-        wprintf(L"Интерпретатор: условие в если должно быть \"%ls\", а представлено \"%ls\"", get_object_type(BOOL_OBJ)->str->string, get_object_type(condition->type)->str->string);
+        wprintf(L"Интерпретатор: условие в если должно быть \"%ls\", а представлено \"%ls\"\n", get_object_type(BOOL_OBJ)->str->string, get_object_type(condition->type)->str->string);
         EXIT;
     }
     if(condition->_bool)
@@ -151,7 +204,7 @@ bmpl_object* un_bool(wchar* op, int value)
         return new_object(BOOL_OBJ, &res, ARENA);
     }
 
-    wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\"", op, get_object_type(BOOL_OBJ)->str->string);
+    wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\"\n", op, get_object_type(BOOL_OBJ)->str->string);
     EXIT;
 }
 bmpl_object* un_num(wchar* op, big_num* value)
@@ -164,7 +217,7 @@ bmpl_object* un_num(wchar* op, big_num* value)
         return new_object(NUM_OBJ, res, ARENA);
     }
 
-    wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\"", op, get_object_type(NUM_OBJ)->str->string);
+    wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\"\n", op, get_object_type(NUM_OBJ)->str->string);
     EXIT;
 }
 bmpl_object* interpretate_unary(Expression* expr)
@@ -174,7 +227,7 @@ bmpl_object* interpretate_unary(Expression* expr)
     if(value->type == BOOL_OBJ) return un_bool(op, value->_bool);
     if(value->type == NUM_OBJ) return un_num(op, value->num);
 
-    wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\"", op, get_object_type(value->type)->str->string);
+    wprintf(L"Интерпретатор: Неизвестная операция: \"%ls\" \"%ls\"\n", op, get_object_type(value->type)->str->string);
     EXIT;
 }
 bmpl_object* interpretate_bool(Expression* expr)

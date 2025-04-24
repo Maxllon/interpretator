@@ -48,7 +48,7 @@ bmpl_string* bmpl_string_copy(bmpl_string* string, Arena* arena)
 bmpl_string* bmpl_string_cancat(bmpl_string* a, bmpl_string* b, Arena* arena)
 {
     bmpl_string* res = arena_alloc(arena, sizeof(bmpl_string));
-    res->string = arena_alloc(arena, sizeof(wchar)*a->size*b->size + 2);
+    res->string = arena_alloc(arena, sizeof(wchar)*(a->size+b->size) + 2);
     res->size = a->size + b->size;
     wcscpy(res->string, a->string);
     wcscat(res->string, b->string);

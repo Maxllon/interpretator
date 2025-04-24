@@ -25,7 +25,7 @@ bmpl_object* new_object(bmpl_object_types type, void* value, Arena* arena)
             obj->root = value;
             break;
         case INSTRYCTION_OBJ:
-            obj->str = value;
+            obj->instr_name = value;
             break;
         case RETURN_OBJ:
             obj->ret = value;
@@ -70,7 +70,7 @@ bmpl_object* copy_object(bmpl_object* src, Arena* arena)
             obj->root = dk_copy(src->root, arena);
             break;
         case INSTRYCTION_OBJ:
-            obj->instr_name = bmpl_string_copy(src->str, arena);
+            obj->instr_name = bmpl_string_copy(src->instr_name, arena);
             break;
         case RETURN_OBJ:
             obj->ret = copy_object(obj->ret, arena);
