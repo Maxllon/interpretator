@@ -107,13 +107,18 @@ variable* new_variable(bmpl_string* name, bmpl_object* value, Arena* arena)
 variable* find_var(module* main, bmpl_string* str, Arena* arena)
 {
     if(!main) return NULL;
-    if(main->variables == NULL) return NULL;
+    if(main->variables == NULL)
+    {
+        if(main->parent != NULL) return find_var(main->parent, str, arena);
+        return NULL;
+    }
     big_num* one = big_num_from_str(L"1", arena);
     for(big_num* i = big_num_from_str(L"0", arena); compare_big(i, main->variables->sons) == -1; i = sum_big(i, one, arena))
     {
         variable* var = dk_get_el(main->variables, i, arena);
         if(bmpl_string_equal(var->name, str)) return var;
     }
+    if(main->parent != NULL) return find_var(main->parent, str, arena);
     return NULL;
 }
 

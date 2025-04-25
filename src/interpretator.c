@@ -107,7 +107,7 @@ bmpl_object* interpretate_call(Expression* expr)
     Expression* call_one;
 
     module* temp = CURR_MODULE;
-    CURR_MODULE = new_module(ARENA, NULL);
+    CURR_MODULE = new_module(ARENA, temp);
 
     for(size_t i = 0; i<var->value->func->args->len;++i)
     {
