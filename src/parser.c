@@ -479,6 +479,12 @@ Expression* parse_func()
     tk_list = tk_list->next;
     Expression* expr = create_empty_expr(tk_list->pos, FUNC_EXPR);
 
+    if(tk_list->kind != VARIABLE)
+    {
+        wprintf(L"Парсинг: Неподходящее имя для функции \"%ls\"\n", tk_list->value);
+        EXIT;
+    }
+
     expr->func->name = arena_alloc(ARENA, wcslen(tk_list->value)*2+2);
     wcscpy(expr->func->name, tk_list->value);
     skip(expr->func->name);
@@ -486,7 +492,13 @@ Expression* parse_func()
     skip(L"(");
     while(wcscmp(tk_list->value, L")") != 0)
     {
-        bm_vector_push(expr->func->arguments, parse_expr());
+        Expression* arg = parse_expr();
+        if(arg->kind != VARIABLE_EXPR)
+        {
+            wprintf(L"Парсинг: функция может иметь только имена переменных в аругментах\n");
+            EXIT;
+        }
+        bm_vector_push(expr->func->arguments, arg);
         if(tk_list->kind == END)
         {
             wprintf(L"Парсинг: нет парной скобки )\n");

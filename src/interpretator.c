@@ -60,12 +60,88 @@ bmpl_object* interpretate_atom(Expression* expr)
         case INSTRUCTION_EXPR:
             res = interpretate_instryction(expr);
             break;
+        case FUNC_EXPR:
+            res = interpretate_func(expr);
+            break;
+        case CALL_EXPR:
+            res = interpretate_call(expr);
+            break;
+        case RETURN_EXPR:
+            res = interpretate_return(expr);
+            break;
         default:
             wprintf(L"Интерпретация: неизвестный тип выражения: %d\n", expr->kind);
             EXIT;
             break;
     }
     return res;
+}
+
+bmpl_object* interpretate_return(Expression* expr)
+{
+    return new_object(RETURN_OBJ, interpretate_atom(expr->_return->value), ARENA);
+}
+
+bmpl_object* interpretate_call(Expression* expr)
+{
+    bmpl_string* name = bmpl_string_from_str(expr->call->name, ARENA);
+    variable* var = find_var(CURR_MODULE, name, ARENA);
+    if(!var)
+    {
+        wprintf(L"Интерпретатор: нет функции с именем \"%ls\"\n", name->string);
+        EXIT;
+    }
+    if(var->value->type != FUNC_OBJ)
+    {
+        wprintf(L"Интерпретатор: нет функции с именем \"%ls\"\n", name->string);
+        EXIT;
+    }
+    if(var->value->func->args->len != expr->call->arguments->len)
+    {
+        wprintf(L"Интерпретатор: функция \"%ls\" ожидает %llu аргументов. Получено %llu аргументов\n", name->string, var->value->func->args->len, expr->call->arguments->len);
+        EXIT;
+    }
+    bmpl_string* arg_name;
+    variable* arg_var;
+    bmpl_object* obj;
+    Expression* call_one;
+
+    module* temp = CURR_MODULE;
+    CURR_MODULE = new_module(ARENA, NULL);
+
+    for(size_t i = 0; i<var->value->func->args->len;++i)
+    {
+        call_one = bm_vector_at(expr->call->arguments, i);
+        obj = get_object(interpretate_atom(call_one), ARENA);
+
+        arg_name = bmpl_string_from_str(((Expression*)bm_vector_at(var->value->func->args, i))->variable->name, ARENA);
+        arg_var = new_variable(arg_name, obj, ARENA);
+        add_var(CURR_MODULE, arg_var, ARENA);
+    }
+    obj = interpretate_atom(var->value->func->body);
+    if(obj->type == RETURN_OBJ) obj = obj->ret;
+    CURR_MODULE = temp;
+    return obj;
+}
+
+bmpl_object* interpretate_func(Expression* expr)
+{
+
+    func_object* fnc = arena_alloc(ARENA, sizeof(func_object));
+    fnc->args = expr->func->arguments;
+    fnc->body = expr->func->body;
+    bmpl_object* obj = new_object(FUNC_OBJ, fnc, ARENA);
+
+    bmpl_string* name = bmpl_string_from_str(expr->func->name, ARENA);
+    variable* var = find_var(CURR_MODULE, name, ARENA);
+    if(!var)
+    {
+        var = new_variable(name, obj, ARENA);
+        add_var(CURR_MODULE, var, ARENA);
+    }
+    else var->value = obj;
+
+    return obj;
 }
 bmpl_object* interpretate_instryction(Expression* expr)
 {
@@ -98,6 +174,7 @@ bmpl_object* interpretate_while(Expression* expr)
             if(obj->instr == BREAK) return new_object(VOID_OBJ, NULL, ARENA);
             if(obj->instr == CONTINUE) obj = new_object(VOID_OBJ, NULL, ARENA);
         }
+        if(obj->type == RETURN_OBJ) return obj;
     }
     return obj;
 }
@@ -133,6 +210,7 @@ bmpl_object* interpretate_foreach(Expression* expr)
             if(obj->instr == BREAK) return new_object(VOID_OBJ, NULL, ARENA);
             if(obj->instr == CONTINUE) obj = new_object(VOID_OBJ, NULL, ARENA);
         }
+        if(obj->type == RETURN_OBJ) return obj;
     }
     return obj;
 }
@@ -161,6 +239,7 @@ bmpl_object* interpretate_seque(Expression* expr)
     {
         obj = interpretate_atom((Expression*)bm_vector_at(expr->seque->expressions, i));
         if(obj->type == INSTRYCTION_OBJ) return obj;
+        if(obj->type == RETURN_OBJ) return obj;
     }
     return obj;
 }

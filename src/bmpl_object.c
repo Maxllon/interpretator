@@ -82,6 +82,12 @@ bmpl_object* copy_object(bmpl_object* src, Arena* arena)
     return obj;
 }
 
+bmpl_object* get_object(bmpl_object* src, Arena* arena)
+{
+    if(src->type == LIST_OBJ) return src;
+    return copy_object(src, arena);
+}
+
 module* new_module(Arena* arena, module* parent)
 {
     module* block = arena_alloc(arena, sizeof(module));

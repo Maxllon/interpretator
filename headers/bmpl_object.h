@@ -46,8 +46,15 @@ struct bmpl_object
     };
 };
 
+struct func_object
+{
+    Expression* body;
+    bm_vector* args;
+};
+
 bmpl_object* new_object(bmpl_object_types type, void* value, Arena* arena);
 bmpl_object* copy_object(bmpl_object* src, Arena* arena);
+bmpl_object* get_object(bmpl_object* src, Arena* arena);
 
 typedef struct module module;
 typedef struct variable variable;
