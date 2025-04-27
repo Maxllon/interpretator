@@ -239,6 +239,11 @@ tk_node* lexing(wchar* file, Arena* arena)
                         wprintf(L"Ошибка: строка не имеет конца!! <%d><%d>\n", pos.x, pos.y);
                         EXIT;
                     }
+                    if(*(symbols->value) == L'\\')
+                    {
+                        symbols = symbols->next;
+                        if(*(symbols->value) == L'n') *symbols->value = L'\n';
+                    }
                     bm_wcscat(str, symbols->value);
                 }
                 push_node(main, new_node(STRING, str, pos));

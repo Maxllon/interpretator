@@ -10,31 +10,6 @@ void interpretate(Expression* expr, Arena* arena);
 
 bmpl_object* interpretate_atom(Expression* expr);
 
-/*VOID_EXPR = 0,
-
-SEQUE_EXPR,
-CALL_EXPR,
-IF_EXPR,
-
-VARIABLE_EXPR,
-
-ARRAY_EXPR,
-BOOLEAN_EXPR,
-STRING_EXPR,
-NUMBER_EXPR,
-INDEX_EXPR,
-
-BINARY_EXPR,
-UNARY_EXPR,
-
-WHILE_EXPR,
-FOREACH_EXPR,
-
-FUNC_EXPR,
-RETURN_EXPR,
-
-INSTRUCTION_EXPR*/
-
 bmpl_object* get_object_type(bmpl_object_types type);
 
 

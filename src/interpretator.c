@@ -9,8 +9,6 @@ void interpretate(Expression* expr, Arena* arena)
     ARENA = arena;
     CURR_MODULE = new_module(arena, NULL);
     interpretate_atom(expr);
-    variable* var = find_var(CURR_MODULE, bmpl_string_from_str(L"банан", ARENA), ARENA);
-    wprintf(L"%ls\n", var->value->str->string);
 }
 
 bmpl_object* interpretate_atom(Expression* expr)
@@ -82,9 +80,31 @@ bmpl_object* interpretate_return(Expression* expr)
     return new_object(RETURN_OBJ, interpretate_atom(expr->_return->value), ARENA);
 }
 
+static bmpl_object* print(bm_vector* args)
+{
+    if(args->len != 1)
+    {
+        wprintf(L"Интерпретатор: функция \"печать\" ожидает %llu аргументов. Получено %llu аргументов\n", 2, args->len);
+        EXIT;
+    }
+    bmpl_object* a = interpretate_atom(bm_vector_at(args, 0));
+
+    if(a->type != STR_OBJ)
+    {
+        wprintf(L"Интерпретатор: функция \"печать\" ожидает \"%ls\". Получено \"%ls\"\n", get_object_type(STR_OBJ)->str->string, get_object_type(a->type)->str->string);
+        EXIT;
+    }
+
+    wprintf(L"%ls", a->str->string);
+    return a;
+}
+
 bmpl_object* interpretate_call(Expression* expr)
 {
     bmpl_string* name = bmpl_string_from_str(expr->call->name, ARENA);
+
+    if(wcscmp(L"печать", name->string) == 0) return print(expr->call->arguments);
+
     variable* var = find_var(CURR_MODULE, name, ARENA);
     if(!var)
     {
