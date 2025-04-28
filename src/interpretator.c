@@ -80,6 +80,50 @@ bmpl_object* interpretate_return(Expression* expr)
     return new_object(RETURN_OBJ, interpretate_atom(expr->_return->value), ARENA);
 }
 
+static void out(bmpl_object* obj)
+{
+    switch(obj->type)
+    {
+        case STR_OBJ:
+            wprintf(L"%ls", obj->str->string);
+            break;
+        case NUM_OBJ:
+            wprintf(L"%ls", str_from_big_num(obj->num, ARENA));
+            break;
+        case BOOL_OBJ:
+            wchar* temp = L"Истина";
+            if(!obj->_bool) temp = L"Ложь";
+            wprintf(L"%ls", temp);
+            break;
+        case VOID_OBJ:
+            wprintf(L"ПУСТОТА");
+            break;
+        case LIST_OBJ:
+            wprintf(L"[");
+            big_num* one = big_num_from_str(L"1", ARENA);
+            bmpl_object* a;
+            for(big_num* i = big_num_from_str(L"0", ARENA); compare_big(i, obj->root->sons) == -1; i = sum_big(i, one, ARENA))
+            {
+                a = dk_get_el(obj->root, i, ARENA);
+                if(a->type == STR_OBJ)
+                {
+                    wprintf(L"\"");
+                }
+                out(a);
+                if(a->type == STR_OBJ)
+                {
+                    wprintf(L"\"");
+                }
+                if(compare_big(i, sub_big(obj->root->sons, one, ARENA))) wprintf(L", ");
+            }
+            wprintf(L"]");
+            break;
+        default:
+            wprintf(L"Интерпретатор: неподходящий тип для вывода \"%ls\"\n", get_object_type(obj->type)->str->string);
+            EXIT;
+    }
+}
+
 static bmpl_object* print(bm_vector* args)
 {
     if(args->len != 1)
@@ -88,14 +132,7 @@ static bmpl_object* print(bm_vector* args)
         EXIT;
     }
     bmpl_object* a = interpretate_atom(bm_vector_at(args, 0));
-
-    if(a->type != STR_OBJ)
-    {
-        wprintf(L"Интерпретатор: функция \"печать\" ожидает \"%ls\". Получено \"%ls\"\n", get_object_type(STR_OBJ)->str->string, get_object_type(a->type)->str->string);
-        EXIT;
-    }
-
-    wprintf(L"%ls", a->str->string);
+    out(a);
     return a;
 }
 
