@@ -8,6 +8,7 @@ void interpretate(Expression* expr, Arena* arena)
     if(expr == NULL || arena == NULL) return;
     ARENA = arena;
     CURR_MODULE = new_module(arena, NULL);
+    std_funcs();
     interpretate_atom(expr);
 }
 
@@ -136,11 +137,13 @@ static bmpl_object* print(bm_vector* args)
     return a;
 }
 
+void std_funcs()
+{
+    add_var(CURR_MODULE, new_variable(bmpl_string_from_str(L"печать", ARENA), new_object(FUNC_OBJ, &print, ARENA), ARENA), ARENA);
+}
 bmpl_object* interpretate_call(Expression* expr)
 {
     bmpl_string* name = bmpl_string_from_str(expr->call->name, ARENA);
-
-    if(wcscmp(L"печать", name->string) == 0) return print(expr->call->arguments);
 
     variable* var = find_var(CURR_MODULE, name, ARENA);
     if(!var)
@@ -152,6 +155,11 @@ bmpl_object* interpretate_call(Expression* expr)
     {
         wprintf(L"Интерпретатор: нет функции с именем \"%ls\"\n", name->string);
         EXIT;
+    }
+    if(var->value->func->is_std)
+    {
+        bmpl_object* (*restored_func_ptr)(bm_vector*) = (bmpl_object* (*)(bm_vector*))var->value->func;
+        return restored_func_ptr(expr->call->arguments);
     }
     if(var->value->func->args->len != expr->call->arguments->len)
     {
@@ -187,6 +195,7 @@ bmpl_object* interpretate_func(Expression* expr)
     func_object* fnc = arena_alloc(ARENA, sizeof(func_object));
     fnc->args = expr->func->arguments;
     fnc->body = expr->func->body;
+    fnc->is_std = 0;
     bmpl_object* obj = new_object(FUNC_OBJ, fnc, ARENA);
 
     bmpl_string* name = bmpl_string_from_str(expr->func->name, ARENA);

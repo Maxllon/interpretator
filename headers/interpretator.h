@@ -52,4 +52,6 @@ bmpl_object* bin_list_num(wchar* op, bmpl_object* left, big_num* right);
 bmpl_object* un_bool(wchar* op, int value);
 bmpl_object* un_num(wchar* op, big_num* value);
 
+void std_funcs();
+
 #endif

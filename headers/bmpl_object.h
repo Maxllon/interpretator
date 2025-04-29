@@ -50,6 +50,7 @@ struct func_object
 {
     Expression* body;
     bm_vector* args;
+    int is_std;
 };
 
 bmpl_object* new_object(bmpl_object_types type, void* value, Arena* arena);
