@@ -1,31 +1,46 @@
-#include<stdio.h>
-#include<stdlib.h>
+#include<defines.h>
+#include<my_string.h>
+#include<globals.h>
+#include<arena.h>
+#include<read_file.h>
+#include<token.h>
+#include<expression.h>
+#include<long_num.h>
+#include<interpretator.h>
 
-#include"includes.h"
-#include"read_file.h"
-#include"lexer.h"
-#include"parser.h"
-#include"arena.h"
-#include"interpretator.h"
-#include"long_num.h"
-#include"bmpl_string.h"
-#include"dekart_tree.h"
+Arena* ARENA = NULL;
+error LAST_ERROR = {0};
 
-int main(int argc, char *argv[])
+
+int main()
 {
+    ARENA = arena_create();
+    LAST_ERROR.type = ALL_GOOD;
 
-    _wsetlocale(LC_ALL, L"");
-    srand(time(NULL));
-    Arena* ARENA = arena_create();
-    wchar* filename = L"example.txt";
-    wchar* file;
-    read_file_win(L"example.txt", &file, ARENA);
-    if(out_file) wprintf(L"%ls\n\n\n\n",file);
-    tk_node* main = lexing(file, ARENA);
-    Expression* expr = parse(main, ARENA);
+    string* str = str_init(U"");
+    read_txt_file(str, "samples/test.dorl");
 
-    interpretate(expr, ARENA);
-    arena_destroy(ARENA);
-    system("pause");
+    str_out(str);
+
+    link_node* token_list = tokenize(str);
+    if(LAST_ERROR.type == ALL_GOOD) out_tk_list(token_list);
+    else
+    {
+        printf("Ошибка в лексере: %d\n", LAST_ERROR.type);
+        arena_destroy();
+        return 0;
+    }
+    expression* AST = parse(token_list);
+    if(LAST_ERROR.type == ALL_GOOD) out_AST(AST);
+    else
+    {
+        printf("Ошибка в парсере: %d\n", LAST_ERROR.type);
+        arena_destroy();
+        return 0;
+    }
+    printf("\n\n");
+    interpretate(AST);
+    printf("\n");
+    arena_destroy();
     return 0;
 }
