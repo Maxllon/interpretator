@@ -1,6 +1,9 @@
 #include<interpretator.h>
 #include<globals.h>
 
+environment* str_methods = NULL;
+environment* list_methods = NULL;
+
 
 
 static dorl_object* 
@@ -11,6 +14,53 @@ static dorl_object*
 interpretate_var(expression* expr);
 static dorl_object*
 bin_assign(expression* left, expression* right);
+
+int ise = 0;
+
+static size_t
+get_real_index(dorl_object* index, dorl_object* dest)
+{
+    if(index->type != OBJ_NUM)
+    {
+        printf("Неправильный индекс!\n");
+        arena_destroy();
+        exit(1);
+    }
+    if(dest->type != OBJ_LIST && dest->type != OBJ_STR)
+    {
+        printf("Неправильный индекс!\n");
+        arena_destroy();
+        exit(1);
+    }
+    size_t pos = szt_from_big_num(index->obj.num);
+    size_t sz;
+    if(dest->type == OBJ_LIST)
+    {
+        sz = dk_get_size(dest->obj.root);
+    }
+    else
+    {
+        sz = dest->obj.str->len;
+    }
+    if(ise) sz++;
+    if(index->obj.num->is_negative)
+    {
+        if(pos > sz)
+        {
+            printf("Неправильный индекс!\n");
+            arena_destroy();
+            exit(1);
+        }
+        pos = sz - pos;
+    }
+    if(pos >= sz)
+    {
+        printf("Неправильный индекс!\n");
+        arena_destroy();
+        exit(1);
+    } 
+    return pos;
+}
 
 static dorl_object* void_obj;
 environment* CURRENT_ENVI;
@@ -84,9 +134,72 @@ STD_OUT(link_node* val)
     return void_obj;
 }
 
+static dorl_object*
+STD_STR_REV(link_node* val)
+{
+    dorl_object* str = environment_get(str_init(U"self"), CURRENT_ENVI);
+    str_reverse(str->obj.str);
+    return str;
+}
+
+static dorl_object*
+STD_STR_CUT(link_node* val)
+{
+    dorl_object* str = environment_get(str_init(U"self"), CURRENT_ENVI);
+    dorl_object* start = val->value;
+    val = val->next;
+    dorl_object* end = val->value;
+    if(start->type != OBJ_NUM || end->type != OBJ_NUM)
+    {
+        printf("Срез ожидает два числа\n");
+        arena_destroy();
+        exit(1);
+    }
+    size_t pos_start = get_real_index(start, str);
+    size_t pos_end = get_real_index(end, str);
+    if(start > end)
+    {
+        printf("Некорректный срез!\n");
+        arena_destroy();
+        exit(1);
+    }
+    str_cut(str->obj.str, pos_start, pos_end);
+    return str;
+}
+
+static dorl_object*
+STD_LIST_ADD(link_node* val)
+{
+    dorl_object* list = environment_get(str_init(U"self"), CURRENT_ENVI);
+    dorl_object* el = val->value;
+    val = val->next;
+    dorl_object* index = val->value;
+    ise = 1;
+    size_t pos = get_real_index(index, list);
+    ise = 0;
+    list->obj.root = dk_add(list->obj.root, dk_new_node(dorl_object_copy(el)), pos);
+    return void_obj;
+}
+
 static void
 set_global()
 {
+    str_methods = environment_create(NULL);
+    list_methods = environment_create(NULL);
+
+    //str
+    environment* global = CURRENT_ENVI;
+    CURRENT_ENVI = str_methods;
+    func_create(U"перевернуть", 0, STD_STR_REV);
+    func_create(U"срез", 2, STD_STR_CUT);
+    CURRENT_ENVI = global;
+
+    //list
+    global = CURRENT_ENVI;
+    CURRENT_ENVI = list_methods;
+    func_create(U"добавить", 2, STD_LIST_ADD);
+    CURRENT_ENVI = global;
+
     func_create(U"печать", 1, STD_OUT);
 }
 
@@ -483,44 +596,7 @@ interpretate_index(expression* expr)
 {
     dorl_object* dest = interpretate_atom(expr->expr.index->dest);
     dorl_object* index = interpretate_atom(expr->expr.index->index);
-    if(index->type != OBJ_NUM)
-    {
-        LAST_ERROR.pos_start = expr->expr.index->index->_pos;
-        LAST_ERROR.type = INCORRECT_INDEX;
-        return NULL;
-    }
-    if(dest->type != OBJ_LIST && dest->type != OBJ_STR)
-    {
-        LAST_ERROR.pos_start = expr->expr.index->index->_pos;
-        LAST_ERROR.type = INCORRECT_ITER;
-        return NULL;
-    }
-    size_t pos = szt_from_big_num(index->obj.num);
-    size_t sz;
-    if(dest->type == OBJ_LIST)
-    {
-        sz = dk_get_size(dest->obj.root);
-    }
-    else
-    {
-        sz = dest->obj.str->len;
-    }
-    if(index->obj.num->is_negative)
-    {
-        if(pos > sz)
-        {
-            LAST_ERROR.pos_start = expr->expr.index->index->_pos;
-            LAST_ERROR.type = INCORRECT_INDEX;
-            return NULL;
-        }
-        pos = sz - pos;
-    }
-    if(pos >= sz)
-    {
-        LAST_ERROR.pos_start = expr->expr.index->index->_pos;
-        LAST_ERROR.type = INCORRECT_ITER;
-        return NULL;
-    }
+    size_t pos = get_real_index(index, dest);
     if(dest->type == OBJ_LIST)
     {
         return (dorl_object*)dk_get_el(dest->obj.root, pos);

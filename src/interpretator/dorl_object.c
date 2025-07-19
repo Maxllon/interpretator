@@ -11,7 +11,17 @@ dorl_object* dorl_object_create(object_type type)
     if(type == OBJ_FUNC)
     {
         res->obj.func = arena_alloc(sizeof(func_obj));
-    }  
+    } 
+    if(type == OBJ_LIST)
+    {
+        res->methods = environment_copy(list_methods);
+        environment_change(str_init(U"self"), res, res->methods);
+    }
+    if(type == OBJ_STR)
+    {
+        res->methods = environment_copy(str_methods);
+        environment_change(str_init(U"self"), res, res->methods);
+    }
     return res;
 }
 

@@ -69,6 +69,7 @@ environment* environment_copy(environment* envi);
 dorl_object* environment_get(string* name, environment* dest);
 int environment_change(string* name, dorl_object* obj, environment* dest);
 
-
+extern environment* str_methods;
+extern environment* list_methods;
 
 #endif

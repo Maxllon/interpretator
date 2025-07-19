@@ -45,6 +45,7 @@ list_at(vector* list, size_t index)
 {
     if(index >= list->capacity)
     {
+        list->len = index;
         list->buff = arena_realloc(list->buff, sizeof(void*) * index * 2);
         list->capacity = index * 2;
         if(!list->buff)
@@ -62,6 +63,7 @@ list_change(vector* list, void* value, size_t index)
 {
     if(index >= list->capacity)
     {
+        list->len = index;
         list->buff = arena_realloc(list->buff, sizeof(void*) * index * 2);
         list->capacity = index * 2;
         if(!list->buff)
