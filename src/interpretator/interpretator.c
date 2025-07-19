@@ -919,6 +919,7 @@ interpretate_method(expression* expr)
     dorl_object* dest = interpretate_atom(expr->expr.method->dest);
     environment* global = CURRENT_ENVI;
     CURRENT_ENVI = dest->methods;
+    CURRENT_ENVI->parent = global;
     dorl_object* res = interpretate_atom(expr->expr.method->call);
     CURRENT_ENVI = global;
     return res;
