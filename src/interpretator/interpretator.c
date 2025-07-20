@@ -537,6 +537,14 @@ interpretate_bin(expression* expr)
     if(!left) return NULL;
     dorl_object* right = interpretate_atom(expr->expr.binary->right);
     if(!right) return NULL;
+    if(op == KEY_EQUAL || op == KEY_NOT_EQUAL)
+    {
+        bool_t res = dorl_object_equal(left, right);
+        if(op == KEY_NOT_EQUAL) res = res == True ? False : True;
+        dorl_object* ret = dorl_object_create(OBJ_BOOL);
+        ret->obj._bool = res;
+        return ret;
+    }
     if(left->type == right->type)
     {
         if(left->type == OBJ_NUM) return bin_num_num(left, right, op);

@@ -77,6 +77,47 @@ dorl_object* dorl_object_get(dorl_object* obj)
     return dorl_object_copy(obj);
 }
 
+bool_t dorl_object_equal(dorl_object* obj1, dorl_object* obj2)
+{
+    if(obj1->type != obj2->type) return False;
+    switch(obj1->type)
+    {
+        case OBJ_NUM:
+            if(compare_big_normal(obj1->obj.num, obj2->obj.num) == 0) return True;
+            return False;
+        case OBJ_STR:
+            return str_equal_fast(obj1->obj.str, obj2->obj.str);
+        case OBJ_FUNC:
+            if(obj1->obj.func == obj2->obj.func) return True;
+            return False;
+        case OBJ_VOID: return True;
+        case OBJ_CLASS:
+            printf("Нельзя сравнивать объекты!\n");
+            arena_destroy();
+            exit(1);
+        case OBJ_INSTRYCTION:
+            if(obj1->obj.instr_type == obj2->obj.instr_type) return True;
+            return False;
+        case OBJ_RETURN:    
+            return dorl_object_equal(obj1->obj.ret_value, obj2->obj.ret_value);
+        case OBJ_LIST:
+            dk_node* root1 = obj1->obj.root;
+            dk_node* root2 = obj1->obj.root;
+            size_t sz = dk_get_size(root1);
+            if(sz != dk_get_size(root2)) return False;
+            for(size_t i=0;i<sz;++i)
+            {
+                if(dorl_object_equal(dk_get_el(root1, i), dk_get_el(root2, i)) == False) return False;
+            }
+            return True;
+        default:
+            printf("Неизвестный тип для сравнения dorl объектов\n");
+            arena_destroy();
+            exit(1);
+    }
+    return False;
+}
+
 environment* environment_create(environment* parent)
 {
     environment* res = arena_alloc(sizeof(environment));

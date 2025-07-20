@@ -63,6 +63,7 @@ struct func_obj
 dorl_object* dorl_object_create(object_type type);
 dorl_object* dorl_object_copy(dorl_object* obj);
 dorl_object* dorl_object_get(dorl_object* obj);
+bool_t dorl_object_equal(dorl_object* obj1, dorl_object* obj2);
 
 environment* environment_create(environment* parent);
 environment* environment_copy(environment* envi);
