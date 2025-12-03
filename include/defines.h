@@ -15,7 +15,7 @@
 #define bool_t uint8_t
 
 #define LIST_DEFAULTT_LEN 16
-#define OUT_SYMB_LIST 1
+#define OUT_SYMB_LIST 0
 #define REGION_DEFAULT_CAPACITY 256
 
 typedef struct pair pair;

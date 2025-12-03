@@ -10,13 +10,21 @@
 
 Arena* ARENA = NULL;
 error LAST_ERROR = {0};
+int showAll = 0;
+
 
 int
 is_args_valid(int argc, char** argv)
 {
     (void)argv;
-    if(argc != 2)
+    if(argc > 3 || argc < 2)
         return INCORRECT_ARGS;
+    if(argc == 3)
+    {
+        if(strcmp(*(argv + 2), "-show") != 0)
+            return INCORRECT_ARGS;
+        showAll = 1;
+    }
     return ALL_GOOD;
 }
 
@@ -36,10 +44,15 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    str_out(str);
+    if(showAll)
+        str_out(str);
 
     link_node* token_list = tokenize(str);
-    if(LAST_ERROR.type == ALL_GOOD) out_tk_list(token_list);
+    if(LAST_ERROR.type == ALL_GOOD)
+    {
+        if(showAll)
+            out_tk_list(token_list);
+    }
     else
     {
         printf("Ошибка в лексере: %d\n", LAST_ERROR.type);
@@ -47,7 +60,11 @@ int main(int argc, char** argv)
         return 0;
     }
     expression* AST = parse(token_list);
-    if(LAST_ERROR.type == ALL_GOOD) out_AST(AST);
+    if(LAST_ERROR.type == ALL_GOOD) 
+    {
+        if(showAll)
+            out_AST(AST);
+    }
     else
     {
         printf("Ошибка в парсере: %d\n", LAST_ERROR.type);
