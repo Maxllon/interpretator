@@ -25,7 +25,7 @@
 ```bash
     git clone https://github.com/Maxllon/interpretator.git
     cd interpretator
-    make && sudo make install
+    make
 ```
 
 # Запуск программы
@@ -33,7 +33,7 @@
 ```bash
     #Без вывода потробностей интерпретации (токены, AST)
     ./dorl <путь до файла>.dorl
-    
+
     #С выводом всего
     ./dorl <путь до файла>.dorl -show
 ```
