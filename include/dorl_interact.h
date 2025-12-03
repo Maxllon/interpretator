@@ -23,7 +23,8 @@ typedef enum error_type
     UNKNOWN_TOKEN,
     SYNTAX_ERROR,
     INCORRECT_NAME_OBJECT,
-    OUT_OF_RANGE
+    OUT_OF_RANGE,
+    INCORRECT_ARGS
 
 }error_type;
 
@@ -32,5 +33,5 @@ struct error
 {
     error_type type;
     pos pos_start;
-}
+};
 #endif

@@ -11,14 +11,30 @@
 Arena* ARENA = NULL;
 error LAST_ERROR = {0};
 
-
-int main()
+int
+is_args_valid(int argc, char** argv)
 {
+    (void)argv;
+    if(argc != 2)
+        return INCORRECT_ARGS;
+    return ALL_GOOD;
+}
+
+int main(int argc, char** argv)
+{
+    if(is_args_valid(argc, argv) != ALL_GOOD)
+        return 0;
+
     ARENA = arena_create();
     LAST_ERROR.type = ALL_GOOD;
 
     string* str = str_init(U"");
-    read_txt_file(str, "samples/test.dorl");
+    if(read_txt_file(str, *(argv + 1)) != ALL_GOOD)
+    {
+        printf("Ошибка чтения файла: %d\n", LAST_ERROR.type);
+        arena_destroy();
+        return 0;
+    }
 
     str_out(str);
 
